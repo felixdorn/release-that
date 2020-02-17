@@ -1,0 +1,24 @@
+{
+    "commit": {
+        "message": "chore: release {version}",
+        "empty": false,
+        "stageAll": true
+    },
+    "push": false,
+    "tag": {
+        "name": "{version}",
+        "message": "Release Tag {version}"
+    },
+    "tasks": {
+        "beforeAll": "",
+        "afterAll": "",
+        "beforeRelease": "",
+        "afterRelease": "",
+        "beforeCommit": "",
+        "afterCommit": "",
+        "beforeTag": "",
+        "afterTag": "",
+        "beforePush": "",
+        "afterPush": ""
+    }
+}
