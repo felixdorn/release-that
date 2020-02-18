@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 use LaravelZero\Framework\Commands\BuildCommand;
 use NunoMaduro\LaravelConsoleSummary\SummaryCommand;
