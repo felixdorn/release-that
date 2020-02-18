@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => ReleaseCommand::class,
+    'default' => \NunoMaduro\LaravelConsoleSummary\SummaryCommand::class,
 
     /*
     |--------------------------------------------------------------------------

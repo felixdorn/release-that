@@ -17,7 +17,7 @@ class ReleaseCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'release';
+    protected $signature = 'run';
 
     /**
      * The description of the command.
