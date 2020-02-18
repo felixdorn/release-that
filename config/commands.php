@@ -1,6 +1,8 @@
 <?php
 
-use App\Commands\ReleaseCommand;
+use LaravelZero\Framework\Commands\BuildCommand;
+use NunoMaduro\LaravelConsoleSummary\SummaryCommand;
+use Symfony\Component\Console\Command\HelpCommand;
 
 return [
 
@@ -15,7 +17,7 @@ return [
     |
     */
 
-    'default' => \NunoMaduro\LaravelConsoleSummary\SummaryCommand::class,
+    'default' => SummaryCommand::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -57,11 +59,8 @@ return [
     */
 
     'hidden' => [
-        NunoMaduro\LaravelConsoleSummary\SummaryCommand::class,
-        Symfony\Component\Console\Command\HelpCommand::class,
-        Illuminate\Console\Scheduling\ScheduleRunCommand::class,
-        Illuminate\Console\Scheduling\ScheduleFinishCommand::class,
-        Illuminate\Foundation\Console\VendorPublishCommand::class,
+        SummaryCommand::class,
+        HelpCommand::class,
     ],
 
     /*
@@ -76,7 +75,7 @@ return [
     */
 
     'remove' => [
-        // ..
+        BuildCommand::class
     ],
 
 ];

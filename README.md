@@ -1,12 +1,11 @@
-**Moving this project from my ~/stuff, there is a lot to do here**
-
-**See https://trello.com/b/EUUREZv4/release-that**
-
 ![Automated release system for PHP](.github/logo.svg)
-# Release that :rocket: !
+# Release that! :rocket:
+* Execute tests, make builds, run anything
+* Git commit, tag, push
+* Hooks
+* Create release in GitHub, GitLab
+* Usable in any CI/CD environment (`release-that --ci`)
 
-[list of features here]
-[Screencast here]
 
 ## Table of contents
 * [Introduction](#introduction)
@@ -17,9 +16,21 @@
 * [Credit](#credits)
 * [License](#licensing)
 
+
 ## Introduction
 
-// Why, how, when ?
+*Moving this project from my ~/stuff, there is a lot to do here.*
+
+*See https://trello.com/b/EUUREZv4/release-that*
+
+### Why
+Automated release systems are the key to build consistent packages, i recently built an app with NodeJS, and discovered [Release it](https://github.com/release-it/release-it), and thought that I need the same thing in PHP so here it is.
+
+### How
+Release-that binary is distributed as a `.phar` binary and could be used anywhere with PHP 7.3+. The phar is lightweight and has a self-update system to make things as smooth as possible. 
+
+### When
+Release-that is useful when publishing a library to ensure things are done right when releasing but could be used for any PHP application that need strict releasing policy although `Release-that` was designed to work with PHP libraries.
 
 ## Getting started
 
@@ -36,15 +47,22 @@ Next: [Configuration](#configuration)
 
 ## Configuration
 
+To create a fresh configuration file, run 
+```bash
+release-that init
+```
+
+You can add a custom name like this 
+```bash
+release-that init thenonstandardway.json
+```
+
 ### Supported filenames
 * `.release.json`,
 * `.release-that`,
 * `.release-that.json`,
-* `iMs0D4rK.release.json`
 
-Each one will take precedence to the one before. So if a .release-that it will be used instead of .release-json or .release-json, etc.
-
-.iMs0D4rk.release.json > .release-that.json > .release-that > .release.json
+Each one will take precedence to the one before: `.release-that.json` > `.release-that` > `.release.json`
 
 ### Default config
 ```json
@@ -54,7 +72,10 @@ Each one will take precedence to the one before. So if a .release-that it will b
         "empty": false,
         "stageAll": true
     },
-    "push": false,
+    "push": {
+      "remote": "origin",
+      "arguments": ""
+    },
     "tag": {
         "name": "{version}",
         "message": "Release Tag {version}"
@@ -73,12 +94,20 @@ Each one will take precedence to the one before. So if a .release-that it will b
     }
 }
 ```
+They are some variables exposed in `commit.message`,`tag.name` and `tag.message` :
+* `{version}` The bumped version
+* `{date}` The data (Y-m-d) 
 
 ## Usage
+Once you configured `release-that`, you need to run `release-that run` to release the next version. If you release in CI/CD, there is an option : `--ci`. 
 
-Once you configured `release-that`.
-Just run it to release your next version.
-
+### Hooks
+The following variables are exposed in hooks commands.
+* `{repo.remote}` 
+* `{repo.protocol}` 
+* `{repo.pushUrl}`
+* `{repo.fetchUrl}`
+* `{version}` not available in `beforeAll` and `beforeRelease` 
 ## Security
 
 If you discover any security related issues, please email github@felixdorn.fr instead of using the issue tracker.
@@ -99,3 +128,4 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>
+

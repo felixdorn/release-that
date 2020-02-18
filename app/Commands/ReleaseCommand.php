@@ -42,7 +42,15 @@ class ReleaseCommand extends Command
 
         Application::events()->emit('beforeAll');
 
-        Application::output()->title("Let's release that");
+        Application::output()->title(<<<ASCII
+ _____      _                     _   _           _
+|  __ \    | |                   | | | |         | |
+| |__) |___| | ___  __ _ ___  ___| |_| |__   __ _| |_
+|  _  // _ | |/ _ \/ _` / __|/ _ | __| '_ \ / _` | __|
+| | \ |  __| |  __| (_| \__ |  __| |_| | | | (_| | |_
+|_|  \_\___|_|\___|\__,_|___/\___|\__|_| |_|\__,_|\__|
+ASCII
+);
 
         if (!File::exists(Application::cwd() . '.git')) {
             Application::output()->error('Not a git repository');
@@ -111,10 +119,17 @@ class ReleaseCommand extends Command
             Application::events()->emit('afterTag');
         }
 
-        $remote = Application::git()->getRemote('origin');
+
+        if (Application::config()['push']) {
+            $remote = Application::git()->getRemote(
+                Application::config()['push']['remote']
+            );
+        } else {
+            $remote = false;
+        }
 
         $shouldPush = Application::output()->confirm(
-            sprintf('Push to %s (%s)', $remote->getName(), $remote->getPushURL()),
+            sprintf('Push to %s (%s)', $remote ? $remote->getName() : 'no remote set', $remote ? $remote->getPushURL() : 'no push url set'),
             Application::config()['push'] !== false
         );
 
