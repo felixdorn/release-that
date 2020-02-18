@@ -1,7 +1,7 @@
 {
     "commit": {
         "message": "chore: release {version}",
-        "empty": false,
+        "empty": true,
         "stageAll": true
     },
     "push": false,
@@ -9,7 +9,7 @@
         "name": "{version}",
         "message": "Release Tag {version}"
     },
-    "tasks": {
+    "hooks": {
         "beforeAll": "",
         "afterAll": "",
         "beforeRelease": "",

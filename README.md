@@ -82,7 +82,7 @@ Each one will take precedence to the one before: `.release-that.json` > `.releas
         "name": "{version}",
         "message": "Release Tag {version}"
     },
-    "tasks": {
+    "hooks": {
         "beforeAll": "",
         "afterAll": "",
         "beforeRelease": "",

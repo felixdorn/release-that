@@ -1387,7 +1387,7 @@
             "extra": {
                 "laravel": {
                     "providers": [
-                        "NunoMaduro\\LaravelConsoleTask\\LaravelConsoleTaskServiceProvider"
+                        "NunoMaduro\\LaravelConsoleTask\\LaravelConsolehookserviceProvider"
                     ]
                 }
             },

@@ -47,21 +47,21 @@ class Configuration
 
         $config = Json::decode(Json::encode($config), true);
 
-        foreach ($config['tasks'] as $index => $task) {
+        foreach ($config['hooks'] as $index => $task) {
             if (empty($task)) {
                 continue;
             }
 
             if (is_string($task)) {
-                $config['tasks'][$index] = [$task];
+                $config['hooks'][$index] = [$task];
             }
 
-            $hookedTasks = [];
-            foreach ($config['tasks'][$index] as $uniqueTask) {
-                $hookedTasks[] = new Hook($uniqueTask, $index);
+            $hooked = [];
+            foreach ($config['hooks'][$index] as $uniqueTask) {
+                $hooked[] = new Hook($uniqueTask, $index);
             }
 
-            $config['tasks'][$index] = $hookedTasks;
+            $config['hooks'][$index] = $hooked;
         }
 
         return $config;

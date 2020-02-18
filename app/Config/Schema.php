@@ -41,19 +41,19 @@ class Schema
                 ),
                 false
             ),
-            'tasks' => Expect::anyOf(
+            'hooks' => Expect::anyOf(
                 Expect::structure(
                     [
-                    'beforeAll' => self::getTasksSchema(),
-                    'afterAll' => self::getTasksSchema(),
-                    'beforeRelease' => self::getTasksSchema(),
-                    'afterRelease' => self::getTasksSchema(),
-                    'beforeCommit' => self::getTasksSchema(),
-                    'afterCommit' => self::getTasksSchema(),
-                    'beforeTag' => self::getTasksSchema(),
-                    'afterTag' => self::getTasksSchema(),
-                    'beforePush' => self::getTasksSchema(),
-                    'afterPush' => self::getTasksSchema(),
+                    'beforeAll' => self::getHookSchema(),
+                    'afterAll' => self::getHookSchema(),
+                    'beforeRelease' => self::getHookSchema(),
+                    'afterRelease' => self::getHookSchema(),
+                    'beforeCommit' => self::getHookSchema(),
+                    'afterCommit' => self::getHookSchema(),
+                    'beforeTag' => self::getHookSchema(),
+                    'afterTag' => self::getHookSchema(),
+                    'beforePush' => self::getHookSchema(),
+                    'afterPush' => self::getHookSchema(),
                     ]
                 ),
                 false
@@ -62,7 +62,7 @@ class Schema
         );
     }
 
-    private static function getTasksSchema(): AnyOf
+    private static function getHookSchema(): AnyOf
     {
         return Expect::anyOf(
             Expect::arrayOf(

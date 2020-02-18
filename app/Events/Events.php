@@ -16,8 +16,8 @@ class Events
     public function emit(...$types): void
     {
         foreach ($types as $type) {
-            if (!Arr::has(App::config('tasks'), $type)
-                || empty(App::config('tasks.' . $type))
+            if (!Arr::has(App::config('hooks'), $type)
+                || empty(App::config('hooks.' . $type))
             ) {
                 continue;
             }
@@ -25,7 +25,7 @@ class Events
             /**
              * @var Hook[] $hooks
              */
-            $hooks = App::config('tasks.' . $type);
+            $hooks = App::config('hooks.' . $type);
 
             foreach ($hooks as $hook) {
                 if ($hook->shouldRun()) {
