@@ -52,35 +52,16 @@ class Version
 
     public function getCommit(VersionHolder $version)
     {
-        return $this->removePlaceholder(
+        return Placeholder::remove((
             Application::config()['commit']['message'],
             $version
         );
     }
 
-    private function removePlaceholder(string $message, VersionHolder $version)
-    {
-        $placeholders = [
-            'version' => $version->__toString(),
-            'date' => date('Y-m-d'),
-            'newFilesCount' => Application::git()->getWorkingTreeStatus()->all()->count()
-        ];
-
-        foreach ($placeholders as $key => $value) {
-            $message = str_replace(
-                sprintf('{%s}', $key),
-                $value,
-                $message
-            );
-        }
-
-        return $message;
-    }
 
     public function getTag(VersionHolder $version)
     {
-
-        return $this->removePlaceholder(
+        return Placeholder::remove(
             Application::config()['tag']['name'],
             $version
         );
@@ -89,7 +70,7 @@ class Version
     public function getTagMessage(VersionHolder $version)
     {
 
-        return $this->removePlaceholder(
+        return Placeholder::remove((
             Application::config()['tag']['message'],
             $version
         );

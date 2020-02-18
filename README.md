@@ -95,10 +95,14 @@ Each one will take precedence to the one before: `.release-that.json` > `.releas
         "afterPush": ""
     }
 }
+
 ```
 They are some variables exposed in `commit.message`,`tag.name` and `tag.message` :
-* `{version}` The bumped version
-* `{date}` The data (Y-m-d) 
+* `{date}`
+* `{repo.remote}`  
+* `{repo.pushUrl}`
+* `{repo.fetchUrl}`
+* `{version}`
 
 ## Usage
 Once you configured `release-that`, you need to run 
@@ -133,8 +137,7 @@ This version must follow semantic versioning.
 
 ### Hooks
 The following variables are exposed in hooks commands.
-* `{repo.remote}` 
-* `{repo.protocol}` 
+* `{repo.remote}`  
 * `{repo.pushUrl}`
 * `{repo.fetchUrl}`
 * `{version}` not available in `beforeAll` and `beforeRelease` 
