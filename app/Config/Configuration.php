@@ -15,8 +15,7 @@ class Configuration
      */
     private $filenames = [
         '.release.json',
-        '.release-that',
-        '.release-that.json',
+        '.release-that',       '.release-that.json',
     ];
 
     /**

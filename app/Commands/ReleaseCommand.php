@@ -172,6 +172,6 @@ ASCII
             $this->warn('End dry-run. Enjoyed?');
         }
 
-        exit(0);
+
     }
 }

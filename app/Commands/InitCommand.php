@@ -46,6 +46,6 @@ class InitCommand extends Command
             exit(1);
         }
 
-        exit(0);
+
     }
 }
