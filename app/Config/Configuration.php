@@ -6,7 +6,6 @@ use App\App;
 use App\Events\Hook;
 use Illuminate\Support\Facades\File;
 use Nette\Schema\Processor;
-use Suin\Json;
 
 class Configuration
 {
@@ -20,7 +19,7 @@ class Configuration
     ];
 
     /**
-     * @param  string|null $configFile
+     * @param string|null $configFile
      * @return array<string, array<int|string, string|bool>>
      */
     public function retrieve(?string $configFile = null): array
@@ -42,10 +41,10 @@ class Configuration
 
         $config = (new Processor())->process(
             Schema::getSchema(),
-            JSON::decode($config, true)
+            json_decode($config, true)
         );
 
-        $config = Json::decode(Json::encode($config), true);
+        $config = json_decode(json_encode($config), true);
 
         foreach ($config['hooks'] as $index => $task) {
             if (empty($task)) {
