@@ -19,6 +19,11 @@ class ReleaseCommand extends Command
     protected $signature = 'run
         {--no-hooks : Disable all hooks}
         {--no-hook= : Disable hook(s). Hooks name are comma separated. }
+        {--dry-run : Enable dry-run mode}
+        {--patch : Bump to patch version}
+        {--minor : Bump to minor version}
+        {--major : Bump to major version}
+        {--custom : Bump to custom version}
     ';
 
     /**
@@ -38,11 +43,18 @@ class ReleaseCommand extends Command
         app()->singleton('input', fn() => $this->input);
         app()->singleton('output', fn() => $this->output);
         app()->singleton('config', fn() => (new Configuration())->retrieve());
-        app()->singleton('git', fn() => Repository::open(resolve('path')));
+        app()->singleton('git', fn() => Repository::open(Application::cwd()));
+
+        $isDryRun = $this->option('dry-run');
+
+        if ($isDryRun) {
+            $this->warn('Running in dry-run mode.');
+        }
 
         Application::events()->emit('beforeAll');
 
-        Application::output()->title(<<<ASCII
+        $this->output->write(<<<ASCII
+
  _____      _                     _   _           _
 |  __ \    | |                   | | | |         | |
 | |__) |___| | ___  __ _ ___  ___| |_| |__   __ _| |_
@@ -50,7 +62,7 @@ class ReleaseCommand extends Command
 | | \ |  __| |  __| (_| \__ |  __| |_| | | | (_| | |_
 |_|  \_\___|_|\___|\__,_|___/\___|\__|_| |_|\__,_|\__|
 ASCII
-);
+        );
 
         if (!File::exists(Application::cwd() . '.git')) {
             Application::output()->error('Not a git repository');
@@ -61,29 +73,53 @@ ASCII
 
         $versionManager = new Version();
 
-        $version = $this->choice('Choose the version', [
-            sprintf('major (%s)', $versionManager->nextMajor()),
-            sprintf('minor (%s)', $versionManager->nextMinor()),
-            sprintf('patch (%s)', $versionManager->nextPatch()),
-            'custom'
-        ], sprintf('minor (%s)', $versionManager->nextMinor()));
+        $version = false;
 
-        $version = $versionManager->fromConsoleInput($version);
+        if ($this->option('minor')) {
+            $version = $versionManager->nextMinor();
+        }
 
-        $shouldCommit = Application::output()->confirm(
+        if ($this->option('major')) {
+            $version = $versionManager->nextMajor();
+        }
+
+        if ($this->option('patch')) {
+            $version = $versionManager->nextPatch();
+        }
+
+        if ($this->option('custom')) {
+            $version =  new \PHLAK\SemVer\Version($this->option('custom'));
+        }
+
+        if ($version === false) {
+            $version = $this->choice('Choose the version', [
+                sprintf('major (%s)', $versionManager->nextMajor()),
+                sprintf('minor (%s)', $versionManager->nextMinor()),
+                sprintf('patch (%s)', $versionManager->nextPatch()),
+                'custom'
+            ], sprintf('minor (%s)', $versionManager->nextMinor()));
+
+            $version = $versionManager->fromConsoleInput($version);
+        }
+
+
+        $shouldCommit = $this->confirm(
             sprintf('Commit `%s`', $versionManager->getCommit($version)),
             Application::config()['commit'] !== false
         );
+
 
         if ($shouldCommit) {
             Application::events()->emit('beforeCommit');
 
             $unstagedFiles = Application::git()->getWorkingTreeStatus()->all();
-
-            Application::git()->commit(
-                $commitMessage = $versionManager->getCommit($version),
-                Application::config()['commit']['stageAll']
-            );
+            $commitMessage = $versionManager->getCommit($version);
+            if (!$isDryRun) {
+                Application::git()->commit(
+                    $commitMessage,
+                    Application::config()['commit']['stageAll']
+                );
+            }
 
             $this->line(sprintf(
                 'Committed %s files/directories with message `%s`%s',
@@ -96,20 +132,21 @@ ASCII
         }
 
 
-        $shouldTag = Application::output()->confirm(
+        $shouldTag = $this->confirm(
             sprintf('Tag release with `%s`', $versionManager->getTag($version)),
             Application::config()['tag'] !== false
         );
 
         if ($shouldTag) {
             Application::events()->emit('beforeTag');
-
-            Application::git()->createTag(
-                $tagName = $versionManager->getTag($version),
-                null,
-                $versionManager->getTagMessage($version)
-            );
-
+            $tagName = $versionManager->getTag($version);
+            if (!$isDryRun) {
+                Application::git()->createTag(
+                    $tagName,
+                    null,
+                    $versionManager->getTagMessage($version)
+                );
+            }
             $this->line(sprintf(
                 'Tagged release with `%s`%s',
                 $tagName,
@@ -128,19 +165,25 @@ ASCII
             $remote = false;
         }
 
-        $shouldPush = Application::output()->confirm(
-            sprintf('Push to %s (%s)', $remote ? $remote->getName() : 'no remote set', $remote ? $remote->getPushURL() : 'no push url set'),
+        $shouldPush = $this->confirm(
+            sprintf(
+                'Push to %s (%s)',
+                $remote ? $remote->getName() : 'no remote set',
+                $remote ? $remote->getPushURL() : 'no push url set'
+            ),
             Application::config()['push'] !== false
         );
 
         if ($shouldPush) {
             Application::events()->emit('beforePush');
 
-            Application::git()->push(
-                $remote->getName(),
-                null,
-                Application::config()['push']['arguments']
-            );
+            if (!$isDryRun) {
+                Application::git()->push(
+                    $remote->getName(),
+                    null,
+                    Application::config()['push']['arguments']
+                );
+            }
             $this->line(sprintf(
                 'Pushed to %s%s',
                 $remote->getName(),
@@ -157,6 +200,11 @@ ASCII
                 3
             )
         ));
+
+        if ($isDryRun) {
+            $this->output->newLine();
+            $this->warn('End dry-run. Enjoyed?');
+        }
 
         exit(0);
     }
