@@ -2,6 +2,8 @@
 # Release that! :rocket:
 * Execute tests, make builds, run anything
 * Git commit, tag, push
+* Release candidate, betas, alphas
+* Semver compliant
 * Hooks
 * Create release in GitHub, GitLab
 * Usable in any CI/CD environment (`release-that --ci`)
@@ -99,7 +101,35 @@ They are some variables exposed in `commit.message`,`tag.name` and `tag.message`
 * `{date}` The data (Y-m-d) 
 
 ## Usage
-Once you configured `release-that`, you need to run `release-that run` to release the next version. If you release in CI/CD, there is an option : `--ci`. 
+Once you configured `release-that`, you need to run 
+```bash
+release-that run
+```
+to release the next version.
+
+### Dry-run
+Run
+```bash
+release-that run --dry-run
+```
+
+### CI mode
+Run
+```bash
+release-that run --ci
+```
+#### Minor, major, patch
+You may want bump to a defined release, like minor, major, etc.
+```bash
+release-that run --ci --major
+```
+Or `release-run --ci --minor`, `release-run --ci --patch`
+
+### Custom version
+When running `release-that run`, you can choose a "custom" version.
+
+This version must follow semantic versioning.
+
 
 ### Hooks
 The following variables are exposed in hooks commands.
