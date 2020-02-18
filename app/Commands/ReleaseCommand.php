@@ -2,12 +2,11 @@
 
 namespace App\Commands;
 
-use App\Config\Configuration;
-use App\Config\Events;
-use App\Git\Semver;
+use App\Application;
+use App\Configuration;
+use App\Version;
 use GitElephant\Repository;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 use LaravelZero\Framework\Commands\Command;
 
 class ReleaseCommand extends Command
@@ -17,7 +16,10 @@ class ReleaseCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'run {--no-hooks : Disable all hooks} {--no-hook= : Disable hook(s). Hooks name are comma separated. }';
+    protected $signature = 'run
+        {--no-hooks : Disable all hooks}
+        {--no-hook= : Disable hook(s). Hooks name are comma separated. }
+    ';
 
     /**
      * The description of the command.
@@ -35,103 +37,112 @@ class ReleaseCommand extends Command
     {
         app()->singleton('input', fn() => $this->input);
         app()->singleton('output', fn() => $this->output);
-        app()->singleton('path', fn() => getcwd() . '/');
-        app()->singleton('config', fn() => Configuration::create());
+        app()->singleton('config', fn() => (new Configuration())->retrieve());
         app()->singleton('git', fn() => Repository::open(resolve('path')));
-        Events::emit('beforeAll');
 
-        $config = resolve('config');
+        Application::events()->emit('beforeAll');
 
-        $this->output->title("Let's release that");
+        Application::output()->title("Let's release that");
 
-        if ($this->output->isVerbose()) {
-            $this->info('Resolved configuration.');
-            $this->output->newLine();
-            $this->line('Commit: ' . ($config['commit'] !== false ? 'yes' : 'no'),);
-            $this->line('Tag: ' . ($config['tag'] !== false ? 'yes' : 'no'));
-            $this->line('Push: ' . ($config['push'] !== false ? 'yes' : 'no'));
-        }
-
-        if (!File::exists(resolve('path') . '.git')) {
-            resolve('output')->error('Not a git repository');
+        if (!File::exists(Application::cwd() . '.git')) {
+            Application::output()->error('Not a git repository');
             die(1);
         }
 
+        Application::events()->emit('beforeRelease');
 
-        $semver = new Semver();
-
-        /** @var Repository $git */
-        $git = resolve('git');
-
-        Events::emit('beforeRelease');
+        $versionManager = new Version();
 
         $version = $this->choice('Choose the version', [
-            "major ({$semver->nextMajor()})",
-            "minor ({$semver->nextMinor()})",
-            "patch ({$semver->nextPatch()})",
-            "custom"
-        ], "minor ({$semver->nextMinor()})");
-        $isCustom = false;
+            sprintf('major (%s)', $versionManager->nextMajor()),
+            sprintf('minor (%s)', $versionManager->nextMinor()),
+            sprintf('patch (%s)', $versionManager->nextPatch()),
+            'custom'
+        ], sprintf('minor (%s)', $versionManager->nextMinor()));
 
-        if ($version === 'custom') {
-            $isCustom = true;
-            $version = $this->ask('Enter the custom version (must follow semver)');
-        }
+        $version = $versionManager->fromConsoleInput($version);
 
-        $version = Semver::getVersionFromConsoleChoice($version, $isCustom);
+        $shouldCommit = Application::output()->confirm(
+            sprintf('Commit `%s`', $versionManager->getCommit($version)),
+            Application::config()['commit'] !== false
+        );
 
-        if ($config['commit']) {
+        if ($shouldCommit) {
+            Application::events()->emit('beforeCommit');
 
-            Events::emit('beforeCommit');
+            $unstagedFiles = Application::git()->getWorkingTreeStatus()->all();
 
-            $unstagedFiles = $git->getWorkingTreeStatus()->all();
-
-            $git->commit(
-                $commitMessage = Str::replaceFirst('{version}', $version, $config['commit']['message']),
-                $config['commit']['stageAll'],
-                null,
-                null,
-                $config['commit']['empty']
+            Application::git()->commit(
+                $commitMessage = $versionManager->getCommit($version),
+                Application::config()['commit']['stageAll']
             );
 
-            $this->line("Committed {$unstagedFiles->count()} files/directories with message `{$commitMessage}`.");
+            $this->line(sprintf(
+                'Committed %s files/directories with message `%s`%s',
+                $unstagedFiles->count(),
+                $commitMessage,
+                PHP_EOL
+            ));
 
-            Events::emit('afterCommit');
+            Application::events()->emit('afterCommit');
         }
 
-        if ($config['tag']) {
-            Events::emit('beforeTag');
 
-            $git->createTag(
-                $tagName = Str::replaceFirst('{version}', $version, $config['tag']['name']),
+        $shouldTag = Application::output()->confirm(
+            sprintf('Tag release with `%s`', $versionManager->getTag($version)),
+            Application::config()['tag'] !== false
+        );
+
+        if ($shouldTag) {
+            Application::events()->emit('beforeTag');
+
+            Application::git()->createTag(
+                $tagName = $versionManager->getTag($version),
                 null,
-                Str::replaceFirst('{version}', $version, $config['tag']['message'])
+                $versionManager->getTagMessage($version)
             );
 
-            $this->info("Tagged {$tagName}.");
+            $this->line(sprintf(
+                'Tagged release with `%s`%s',
+                $tagName,
+                PHP_EOL
+            ));
 
-            Events::emit('afterTag');
+            Application::events()->emit('afterTag');
         }
 
-        if ($config['push']) {
-            Events::emit('beforePush');
+        $remote = Application::git()->getRemote('origin');
 
-            $git->push(
-                $remote = $config['push']['remote'],
+        $shouldPush = Application::output()->confirm(
+            sprintf('Push to %s (%s)', $remote->getName(), $remote->getPushURL()),
+            Application::config()['push'] !== false
+        );
+
+        if ($shouldPush) {
+            Application::events()->emit('beforePush');
+
+            Application::git()->push(
+                $remote->getName(),
                 null,
-                $config['push']['arguments']
+                Application::config()['push']['arguments']
             );
+            $this->line(sprintf(
+                'Pushed to %s%s',
+                $remote->getName(),
+                PHP_EOL
+            ));
 
-            $this->line("Pushed to $remote");
-
-            Events::emit('afterPush');
+            Application::events()->emit('afterPush');
         }
 
+        $this->comment(sprintf(
+            'Released in %s',
+            round(
+                microtime(true) - LARAVEL_START,
+                3
+            )
+        ));
 
-        $this->output->newLine();
-        $this->comment("Released in " . round(microtime(true) - LARAVEL_START, 3) . 's');
-
-        Events::emit('afterRelease', 'afterAll');
+        exit(0);
     }
-
 }

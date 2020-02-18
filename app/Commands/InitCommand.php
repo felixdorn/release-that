@@ -5,7 +5,7 @@ namespace App\Commands;
 use Illuminate\Support\Facades\File;
 use LaravelZero\Framework\Commands\Command;
 
-class  InitCommand extends Command
+class InitCommand extends Command
 {
     /**
      * The signature of the command.
@@ -38,9 +38,9 @@ class  InitCommand extends Command
 
             $this->output->write([
                 "Config file will be created at{$configPath}" . PHP_EOL,
-                "Parent directory is " . ($isWritable ? 'writable' : 'not writable') . PHP_EOL,
+                'Parent directory is ' . ($isWritable ? 'writable' : 'not writable') . PHP_EOL,
                 $exists ? 'Configuration file already exists' : '' . PHP_EOL,
-                "Directory permission:" .substr(sprintf('%o', fileperms(dirname($configPath))), -4) . PHP_EOL
+                'Directory permission:' .substr(sprintf('%o', fileperms(dirname($configPath))), -4) . PHP_EOL
             ]);
 
             $this->confirm('Continue?');
@@ -62,5 +62,4 @@ class  InitCommand extends Command
 
         exit(0);
     }
-
 }

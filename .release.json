@@ -11,7 +11,10 @@
     },
     "tasks": {
         "beforeAll": "echo 'Hello'",
-        "afterAll": "",
+        "afterAll": [
+            "echo Done!",
+            "echo Coooooooooool!"
+        ],
         "beforeRelease": "",
         "afterRelease": "",
         "beforeCommit": "",
