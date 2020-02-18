@@ -4,12 +4,15 @@
         "empty": false,
         "stageAll": true
     },
-    "push": false,
+    "push": {
+        "remote": "origin",
+        "arguments": ""
+    },
     "tag": {
         "name": "{version}",
         "message": "Release Tag {version}"
     },
-    "tasks": {
+    "hooks": {
         "beforeAll": "",
         "afterAll": "",
         "beforeRelease": "",

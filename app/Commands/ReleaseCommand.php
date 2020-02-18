@@ -171,7 +171,5 @@ ASCII
             $this->output->newLine();
             $this->warn('End dry-run. Enjoyed?');
         }
-
-
     }
 }

@@ -28,9 +28,8 @@ class Hook
             return 0;
         }
 
-        App::output()->write(
-            exec(sprintf('%s 2>&1', $this->command), $output, $ret)
-        );
+        exec(sprintf('%s 2>&1', $this->command), $output, $ret);
+        App::output()->write('');
 
 
         if ($ret !== 0) {

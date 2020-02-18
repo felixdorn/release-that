@@ -21,9 +21,8 @@ class VersionManager
             return new VersionHolder($version);
         }
 
-        return new VersionHolder(
-            App::output()->ask('Enter the custom version (must follow semver)')
-        );
+        $version = App::output()->ask('Enter the custom version (must follow semver)');
+        return new VersionHolder($version);
     }
 
     /**

@@ -19,7 +19,6 @@ class Committing extends AbstractAction
 
         if ($shouldCommit) {
             App::events()->emit('beforeCommit');
-            $unstagedFiles = App::git()->getWorkingTreeStatus()->all();
             $commitMessage = $manager->getCommit($version);
 
             if (!$this->isDryRun()) {
@@ -31,8 +30,7 @@ class Committing extends AbstractAction
 
             $this->output->write(
                 sprintf(
-                    'Committed %s files/directories with message `%s`%s',
-                    $unstagedFiles->count(),
+                    'Committed `%s`%s',
                     $commitMessage,
                     PHP_EOL
                 )

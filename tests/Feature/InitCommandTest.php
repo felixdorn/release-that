@@ -12,7 +12,7 @@ class InitCommandTest extends TestCase
      *
      * @return void
      */
-    public function testInspiringCommand()
+    public function testInitCommand()
     {
         $this->artisan('init .release.test.json')->assertExitCode(0);
 
