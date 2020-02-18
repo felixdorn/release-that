@@ -10,7 +10,7 @@
         "message": "Release Tag {version}"
     },
     "tasks": {
-        "beforeAll": "",
+        "beforeAll": "echo 'Hello'",
         "afterAll": "",
         "beforeRelease": "",
         "afterRelease": "",

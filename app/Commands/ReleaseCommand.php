@@ -17,7 +17,7 @@ class ReleaseCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'run';
+    protected $signature = 'run {--no-hooks : Disable all hooks} {--no-hook= : Disable hook(s). Hooks name are comma separated. }';
 
     /**
      * The description of the command.
@@ -44,16 +44,19 @@ class ReleaseCommand extends Command
 
         $this->output->title("Let's release that");
 
-        $this->info('Resolved configuration.');
-        $this->output->newLine();
-        $this->line('Commit: ' . ($config['commit'] !== false ? 'yes' : 'no'),);
-        $this->line('Tag: ' . ($config['tag'] !== false ? 'yes' : 'no'));
-        $this->line('Push: ' . ($config['push'] !== false ? 'yes' : 'no'));
+        if ($this->output->isVerbose()) {
+            $this->info('Resolved configuration.');
+            $this->output->newLine();
+            $this->line('Commit: ' . ($config['commit'] !== false ? 'yes' : 'no'),);
+            $this->line('Tag: ' . ($config['tag'] !== false ? 'yes' : 'no'));
+            $this->line('Push: ' . ($config['push'] !== false ? 'yes' : 'no'));
+        }
 
         if (!File::exists(resolve('path') . '.git')) {
             resolve('output')->error('Not a git repository');
             die(1);
         }
+
 
         $semver = new Semver();
 
