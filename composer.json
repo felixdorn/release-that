@@ -1,8 +1,14 @@
 {
     "name": "privagon/release-it",
-    "description": "Automated release system for cool kids.",
-    "keywords": ["release", "automated", "ci", "cd", "release-it"],
-    "type": "project",
+    "description": "Automated release system for PHP",
+    "keywords": [
+        "release",
+        "automated",
+        "ci",
+        "cd",
+        "release-it"
+    ],
+    "type": "library",
     "license": "GPL-3.0-or-later",
     "authors": [
         {
@@ -44,5 +50,7 @@
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "bin": ["builds/release-that"]
+    "bin": [
+        "builds/release-that"
+    ]
 }

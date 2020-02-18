@@ -40,14 +40,9 @@ class ReleaseCommand extends Command
         app()->singleton('git', fn() => Repository::open(resolve('path')));
         Events::emit('beforeAll');
 
-        $this->output->progressStart(100);
         $config = resolve('config');
-        $this->output->progressFinish();
-
 
         $this->output->title("Let's release that");
-
-        $this->output->progressFinish();
 
         $this->info('Resolved configuration.');
         $this->output->newLine();
