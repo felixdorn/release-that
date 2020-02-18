@@ -18,12 +18,13 @@ class ReleaseCommand extends Command
      */
     protected $signature = 'run
         {--no-hooks : Disable all hooks}
-        {--no-hook= : Disable hook(s). Hooks name are comma separated. }
+        {--no-hook= : Disable hook(s). Hooks name are comma separated.}
         {--dry-run : Enable dry-run mode}
         {--patch : Bump to patch version}
         {--minor : Bump to minor version}
         {--major : Bump to major version}
         {--custom : Bump to custom version}
+        {--config= : Custom config filename}
     ';
 
     /**
@@ -88,7 +89,7 @@ ASCII
         }
 
         if ($this->option('custom')) {
-            $version =  new \PHLAK\SemVer\Version($this->option('custom'));
+            $version = new \PHLAK\SemVer\Version($this->option('custom'));
         }
 
         if ($version === false) {

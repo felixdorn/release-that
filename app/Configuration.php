@@ -20,8 +20,9 @@ class Configuration
 
     public function retrieve()
     {
-        $config = false;
+        $config = Application::input()->getOption('config') ?? false;
         $cwd = Application::cwd();
+
 
         foreach ($this->filenames as $filename) {
             if (File::exists($cwd . $filename)) {
