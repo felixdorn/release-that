@@ -52,7 +52,7 @@ class Version
 
     public function getCommit(VersionHolder $version)
     {
-        return Placeholder::remove((
+        return Placeholder::remove(
             Application::config()['commit']['message'],
             $version
         );
@@ -70,7 +70,7 @@ class Version
     public function getTagMessage(VersionHolder $version)
     {
 
-        return Placeholder::remove((
+        return Placeholder::remove(
             Application::config()['tag']['message'],
             $version
         );

@@ -62,6 +62,15 @@ class Application
     }
 
     /**
+     * @return InputInterface
+     */
+    public static function input(): InputInterface
+    {
+        self::get();
+        return self::$input;
+    }
+
+    /**
      * @return Application
      */
     public static function get(): Application
@@ -79,15 +88,6 @@ class Application
     }
 
     /**
-     * @return InputInterface
-     */
-    public static function input(): InputInterface
-    {
-        self::get();
-        return self::$input;
-    }
-
-    /**
      * @return OutputStyle
      */
     public static function output(): OutputStyle
@@ -96,10 +96,31 @@ class Application
         return self::$output;
     }
 
-    public static function config(): array
+    /**
+     * @param string|null $path
+     * @return array|string|null
+     */
+    public static function config(?string $path = null)
     {
         self::get();
-        return self::$configuration;
+
+        if ($path === null) {
+            return self::$configuration;
+        }
+
+        $paths = explode('.', $path);
+        $result = self::$configuration;
+
+        foreach ($paths as $pathPart) {
+            if (!is_array($result)) {
+                return $result;
+            }
+            if (array_key_exists($pathPart, $result)) {
+                $result = $result[$pathPart];
+            }
+        }
+
+
     }
 
     public static function git(): Repository

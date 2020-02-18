@@ -3,7 +3,6 @@
 
 namespace App;
 
-
 use PHLAK\SemVer\Version as VersionHolder;
 
 class Placeholder
@@ -20,13 +19,13 @@ class Placeholder
             'date' => date('Y-m-d'),
             'newFilesCount' => Application::git()->getWorkingTreeStatus()->all()->count(),
             'repo.remote' => Application::git()->getRemote(
-                Application::config()['push']['remote']
+                Application::config('push.remote') ?? 'no remote set'
             )->getName(),
             'repo.pushUrl' => Application::git()->getRemote(
-                Application::config()['push']['remote']
+                Application::config('push.remote') ?? 'no remote set'
             )->getPushURL(),
             'repo.fetchUrl' => Application::git()->getRemote(
-                Application::config()['push']['remote']
+                Application::config('push.remote') ?? 'no remote set'
             )->getFetchURL(),
         ];
 

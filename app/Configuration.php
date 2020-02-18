@@ -18,9 +18,9 @@ class Configuration
         '.release-that.json',
     ];
 
-    public function retrieve()
+    public function retrieve(?string $configFile = null)
     {
-        $config = Application::input()->getOption('config') ?? false;
+        $config = File::exists($configFile) ? $configFile : false;
         $cwd = Application::cwd();
 
 
