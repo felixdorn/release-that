@@ -2,7 +2,7 @@
 <ruleset name="Rules">
 	<description>Rules</description>
 	<rule ref="PSR2"/>
-	<rule ref="Generic.ControlStructures.InlineControlStructure"/>
+    <rule ref="Generic.ControlStructures.InlineControlStructure"/>
 	<rule ref="Squiz.ControlStructures.ControlSignature"/>
 	<rule ref="Squiz.ControlStructures.ControlSignature.NewlineAfterOpenBrace"/>
 	<rule ref="Squiz.Strings.DoubleQuoteUsage"/>

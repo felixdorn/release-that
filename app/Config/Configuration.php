@@ -1,8 +1,9 @@
 <?php
 
+namespace App\Config;
 
-namespace App;
-
+use App\App;
+use App\Events\Hook;
 use Illuminate\Support\Facades\File;
 use Nette\Schema\Processor;
 use Suin\Json;
@@ -12,16 +13,20 @@ class Configuration
     /**
      * @var string[]
      */
-    private array $filenames = [
+    private $filenames = [
         '.release.json',
         '.release-that',
         '.release-that.json',
     ];
 
-    public function retrieve(?string $configFile = null)
+    /**
+     * @param  string|null $configFile
+     * @return array<string, array<int|string, string|bool>>
+     */
+    public function retrieve(?string $configFile = null): array
     {
         $config = File::exists($configFile) ? $configFile : false;
-        $cwd = Application::cwd();
+        $cwd = App::cwd();
 
 
         foreach ($this->filenames as $filename) {
@@ -31,7 +36,7 @@ class Configuration
         }
 
         if (!$config) {
-            Application::get()->output()->error('No configuration file found.');
+            App::get()->output()->error('No configuration file found.');
             die(1);
         }
 

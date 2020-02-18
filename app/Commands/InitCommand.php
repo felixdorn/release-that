@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\App;
 use Illuminate\Support\Facades\File;
 use LaravelZero\Framework\Commands\Command;
 
@@ -28,23 +29,7 @@ class InitCommand extends Command
      */
     public function handle()
     {
-
-
-        $configPath = getcwd() . "/{$this->argument('name')}";
-
-        if ($this->output->isVerbose()) {
-            $isWritable = File::isWritable(dirname($configPath));
-            $exists = File::exists($configPath);
-
-            $this->output->write([
-                "Config file will be created at{$configPath}" . PHP_EOL,
-                'Parent directory is ' . ($isWritable ? 'writable' : 'not writable') . PHP_EOL,
-                $exists ? 'Configuration file already exists' : '' . PHP_EOL,
-                'Directory permission:' .substr(sprintf('%o', fileperms(dirname($configPath))), -4) . PHP_EOL
-            ]);
-
-            $this->confirm('Continue?');
-        }
+        $configPath = App::cwd($this->argument('name'));
 
         $created = File::put(
             $configPath,

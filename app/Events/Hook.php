@@ -1,18 +1,19 @@
 <?php
 
+namespace App\Events;
 
-namespace App;
+use App\App;
 
 class Hook
 {
     /**
      * @var string
      */
-    private string $command;
+    private $command;
     /**
-     * @var string
+     * @var string|null
      */
-    private ?string $name;
+    private $name;
 
     public function __construct(string $command, ?string $name = null)
     {
@@ -26,14 +27,14 @@ class Hook
             return 0;
         }
 
-        Application::output()->write(
+        App::output()->write(
             exec(sprintf('%s 2>&1', $this->command), $output, $ret)
         );
 
 
         if ($ret !== 0) {
-            Application::output()->error(
-                sprintf('Task %sfailed with exit-code %s', $this->name !== null ? $this->name . ' ' : '')
+            App::output()->error(
+                sprintf('Task %sfailed with exit-code %s', $this->name !== null ? $this->name . ' ' : '', $ret)
             );
         }
 
@@ -42,12 +43,17 @@ class Hook
 
     public function shouldRun(): bool
     {
-        if (Application::input()->getOption('no-hooks')) {
+        if (App::input()->getOption('no-hooks')) {
             return false;
         }
 
-        if (Application::input()->getOption('no-hook')) {
-            $disabledHooks = Application::input()->getOption('no-hook');
+        if (App::input()->getOption('no-hook')) {
+            $disabledHooks = App::input()->getOption('no-hook');
+
+            if (!is_string($disabledHooks)) {
+                return true;
+            }
+
             $disabledHooks = explode(',', $disabledHooks);
 
             foreach ($disabledHooks as $disabledHook) {

@@ -32,7 +32,7 @@ Automated release systems are the key to build consistent packages, i recently b
 Release-that binary is distributed as a `.phar` binary and could be used anywhere with PHP 7.3+. The phar is lightweight and has a self-update system to make things as smooth as possible. 
 
 ### When
-Release-that is useful when publishing a library to ensure things are done right when releasing but could be used for any PHP application that need strict releasing policy although `Release-that` was designed to work with PHP libraries.
+Release-that is useful when publishing a library to ensure things are done right when releasing but could also be used for any PHP application that need strict releasing policy although `Release-that` was designed to work with PHP libraries.
 
 ## Getting started
 

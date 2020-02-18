@@ -2,12 +2,16 @@
 
 namespace App\Commands;
 
-use App\Application;
-use App\Configuration;
-use App\Version;
+use App\Actions\Committing;
+use App\Actions\Pushing;
+use App\Actions\Tagging;
+use App\App;
+use App\Config\Configuration;
+use App\Version\VersionManager;
 use GitElephant\Repository;
 use Illuminate\Support\Facades\File;
 use LaravelZero\Framework\Commands\Command;
+use PHLAK\SemVer\Version as VersionHolder;
 
 class ReleaseCommand extends Command
 {
@@ -41,10 +45,33 @@ class ReleaseCommand extends Command
      */
     public function handle()
     {
-        app()->singleton('input', fn() => $this->input);
-        app()->singleton('output', fn() => $this->output);
-        app()->singleton('config', fn() => (new Configuration())->retrieve());
-        app()->singleton('git', fn() => Repository::open(Application::cwd()));
+        app()->singleton(
+            'input',
+            (function () {
+                return $this->input;
+            })->bindTo($this)
+        );
+
+        app()->singleton(
+            'output',
+            (function () {
+                return $this->output;
+            })
+        );
+
+        app()->singleton(
+            'config',
+            function () {
+                return (new Configuration())->retrieve();
+            }
+        );
+
+        app()->singleton(
+            'git',
+            function () {
+                return Repository::open(App::cwd());
+            }
+        );
 
         $isDryRun = $this->option('dry-run');
 
@@ -52,9 +79,10 @@ class ReleaseCommand extends Command
             $this->warn('Running in dry-run mode.');
         }
 
-        Application::events()->emit('beforeAll');
+        App::events()->emit('beforeAll');
 
-        $this->output->write(<<<ASCII
+        $this->output->write(
+            <<<ASCII
 
  _____      _                     _   _           _
 |  __ \    | |                   | | | |         | |
@@ -65,14 +93,14 @@ class ReleaseCommand extends Command
 ASCII
         );
 
-        if (!File::exists(Application::cwd() . '.git')) {
-            Application::output()->error('Not a git repository');
+        if (!File::exists(App::cwd('.git'))) {
+            $this->error('Not a git repository');
             die(1);
         }
 
-        Application::events()->emit('beforeRelease');
+        App::events()->emit('beforeRelease');
 
-        $versionManager = new Version();
+        $versionManager = new VersionManager();
 
         $version = false;
 
@@ -89,118 +117,54 @@ ASCII
         }
 
         if ($this->option('custom')) {
-            $version = new \PHLAK\SemVer\Version($this->option('custom'));
+            $version = new VersionHolder($this->option('custom'));
         }
 
         if ($version === false) {
-            $version = $this->choice('Choose the version', [
-                sprintf('major (%s)', $versionManager->nextMajor()),
-                sprintf('minor (%s)', $versionManager->nextMinor()),
-                sprintf('patch (%s)', $versionManager->nextPatch()),
-                'custom'
-            ], sprintf('minor (%s)', $versionManager->nextMinor()));
+            $version = $this->choice(
+                'Choose the version',
+                [
+                    sprintf('major (%s)', $versionManager->nextMajor()),
+                    sprintf('minor (%s)', $versionManager->nextMinor()),
+                    sprintf('patch (%s)', $versionManager->nextPatch()),
+                    'custom'
+                ],
+                sprintf('minor (%s)', $versionManager->nextMinor())
+            );
 
             $version = $versionManager->fromConsoleInput($version);
         }
 
+        (new Committing(
+            App::input(),
+            App::output(),
+            App::config()
+        ))->do($versionManager, $version);
 
-        $shouldCommit = $this->confirm(
-            sprintf('Commit `%s`', $versionManager->getCommit($version)),
-            Application::config()['commit'] !== false
-        );
+        (new Tagging(
+            App::input(),
+            App::output(),
+            App::config()
+        ))->do($versionManager, $version);
 
-
-        if ($shouldCommit) {
-            Application::events()->emit('beforeCommit');
-
-            $unstagedFiles = Application::git()->getWorkingTreeStatus()->all();
-            $commitMessage = $versionManager->getCommit($version);
-            if (!$isDryRun) {
-                Application::git()->commit(
-                    $commitMessage,
-                    Application::config()['commit']['stageAll']
-                );
-            }
-
-            $this->line(sprintf(
-                'Committed %s files/directories with message `%s`%s',
-                $unstagedFiles->count(),
-                $commitMessage,
-                PHP_EOL
-            ));
-
-            Application::events()->emit('afterCommit');
-        }
+        (new Pushing(
+            App::input(),
+            App::output(),
+            App::config()
+        ))->do($versionManager, $version);
 
 
-        $shouldTag = $this->confirm(
-            sprintf('Tag release with `%s`', $versionManager->getTag($version)),
-            Application::config()['tag'] !== false
-        );
-
-        if ($shouldTag) {
-            Application::events()->emit('beforeTag');
-            $tagName = $versionManager->getTag($version);
-            if (!$isDryRun) {
-                Application::git()->createTag(
-                    $tagName,
-                    null,
-                    $versionManager->getTagMessage($version)
-                );
-            }
-            $this->line(sprintf(
-                'Tagged release with `%s`%s',
-                $tagName,
-                PHP_EOL
-            ));
-
-            Application::events()->emit('afterTag');
-        }
-
-
-        if (Application::config()['push']) {
-            $remote = Application::git()->getRemote(
-                Application::config()['push']['remote']
-            );
-        } else {
-            $remote = false;
-        }
-
-        $shouldPush = $this->confirm(
+        $this->comment(
             sprintf(
-                'Push to %s (%s)',
-                $remote ? $remote->getName() : 'no remote set',
-                $remote ? $remote->getPushURL() : 'no push url set'
-            ),
-            Application::config()['push'] !== false
+                'Released in %ss',
+                round(
+                    microtime(true) - LARAVEL_START,
+                    3
+                )
+            )
         );
 
-        if ($shouldPush) {
-            Application::events()->emit('beforePush');
-
-            if (!$isDryRun) {
-                Application::git()->push(
-                    $remote->getName(),
-                    null,
-                    Application::config()['push']['arguments']
-                );
-            }
-            $this->line(sprintf(
-                'Pushed to %s%s',
-                $remote->getName(),
-                PHP_EOL
-            ));
-
-            Application::events()->emit('afterPush');
-        }
-
-        $this->comment(sprintf(
-            'Released in %s',
-            round(
-                microtime(true) - LARAVEL_START,
-                3
-            )
-        ));
+        App::events()->emit('afterAll');
 
         if ($isDryRun) {
             $this->output->newLine();

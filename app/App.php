@@ -1,52 +1,51 @@
 <?php
 
-
 namespace App;
 
+use App\Events\Events;
 use GitElephant\Repository;
 use Illuminate\Console\OutputStyle;
 use Symfony\Component\Console\Input\InputInterface;
 
-class Application
+class App
 {
     /**
-     * @var null|Application
+     * @var null|App
      */
-    private static ?Application $uniqueInstance = null;
+    private static $uniqueInstance = null;
 
     /**
      * @var InputInterface
      */
-    private static InputInterface $input;
+    private static $input;
 
     /**
      * @var OutputStyle
      */
-    private static OutputStyle $output;
+    private static $output;
 
     /**
-     * @var array
+     * @var string[]|bool[]
      */
-    private static array $configuration;
+    private static $configuration;
     /**
      * @var Repository
      */
-    private static Repository $repository;
+    private static $repository;
 
 
     /**
-     * @param InputInterface $input
-     * @param OutputStyle $output
-     * @param array $configuration
-     * @param Repository $repository
+     * @param InputInterface  $input
+     * @param OutputStyle     $output
+     * @param string[]|bool[] $configuration
+     * @param Repository      $repository
      */
     protected function __construct(
         InputInterface $input,
         OutputStyle $output,
         array $configuration,
         Repository $repository
-    )
-    {
+    ) {
         self::$input = $input;
         self::$output = $output;
         self::$configuration = $configuration;
@@ -54,11 +53,12 @@ class Application
     }
 
     /**
+     * @param  string $path
      * @return string
      */
-    public static function cwd(): string
+    public static function cwd(string $path = ''): string
     {
-        return getcwd() . '/';
+        return getcwd() . '/' . $path;
     }
 
     /**
@@ -71,9 +71,9 @@ class Application
     }
 
     /**
-     * @return Application
+     * @return App
      */
-    public static function get(): Application
+    public static function get(): App
     {
         if (self::$uniqueInstance === null) {
             self::$uniqueInstance = new self(
@@ -97,8 +97,8 @@ class Application
     }
 
     /**
-     * @param string|null $path
-     * @return array|string|null
+     * @param  string|null $path
+     * @return mixed
      */
     public static function config(?string $path = null)
     {
@@ -120,7 +120,7 @@ class Application
             }
         }
 
-
+        return $result;
     }
 
     public static function git(): Repository
