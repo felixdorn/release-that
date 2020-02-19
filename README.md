@@ -2,12 +2,8 @@
 # Release that! :rocket:
 * Execute tests, make builds, run anything
 * Git commit, tag, push
-* Release candidate, betas, alphas
 * Semver compliant
 * Hooks
-* Create release in GitHub, GitLab
-* Usable in any CI/CD environment (`release-that --ci`)
-
 
 ## Table of contents
 * [Introduction](#introduction)
@@ -117,11 +113,6 @@ Run
 release-that run --dry-run
 ```
 
-### CI mode
-Run
-```bash
-release-that run --ci
-```
 #### Minor, major, patch
 You may want bump to a defined release, like minor, major, etc.
 ```bash

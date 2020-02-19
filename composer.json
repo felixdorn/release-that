@@ -53,6 +53,6 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "bin": [
-      "builds/release-that"
+        "builds/release-that"
     ]
 }

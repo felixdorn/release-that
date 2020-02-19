@@ -1,37 +1,20 @@
 {
-    "annotations": false,
-    "banner": [
-        "",
-        "(c) Félix Dorn <github@felixdorn.fr>",
-        "This file is part of the Nitron project.",
-        "This source file is subject to the GPL-3.0 license that is bundled",
-        "with this source code in the file LICENSE."
-    ],
-    "compactors": [
-        "KevinGH\\Box\\Compactor\\Json",
-        "KevinGH\\Box\\Compactor\\Php"
-    ],
-    "compression": "GZ",
+    "chmod": "0755",
     "directories": [
         "app",
-        "stubs",
         "bootstrap",
         "config",
         "vendor"
     ],
     "files": [
+        "composer.json",
         "LICENSE",
-        "composer.json"
+        "stubs/.release.json"
     ],
-    "finder": [
-        {
-            "exclude": [
-                "docs",
-                "tests"
-            ],
-            "in": "vendor",
-            "notName": "/LICENSE|.*\\.md|.*\\.dist|Makefile|composer\\.json|composer\\.lock/"
-        }
-    ],
-    "output": "release-that.phar"
+    "exclude-composer-files": false,
+    "compression": "GZ",
+    "compactors": [
+        "KevinGH\\Box\\Compactor\\Php",
+        "KevinGH\\Box\\Compactor\\Json"
+    ]
 }

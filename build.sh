@@ -12,7 +12,7 @@ composer global require "humbug/box:^3"
 
 composer update -n --no-suggest --optimize-autoloader --no-dev --prefer-dist --no-progress
 
-php release-that app:build
+box compile --with-docker
 
 echo "Release-that build was successful."
 
