@@ -1,4 +1,8 @@
-![Automated release system for PHP](.github/logo.svg)
+![Release that logo](.github/logo.svg)
+
+![Travis build status](https://api.travis-ci.org/felixdorn/release-that.svg?branch=master)
+![Release that license](https://img.shields.io/packagist/l/felixdorn/release-it)
+
 # Release that! :rocket:
 * Execute tests, make builds, run anything
 * Git commit, tag, push
