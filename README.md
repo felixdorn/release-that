@@ -38,11 +38,11 @@ Release-that is useful when publishing a library to ensure things are done right
 
 Install `release-that` with 
 ```bash
-composer require felixdorn/release-that
+composer require felixdorn/release-that --dev
 ``` 
 or globally with 
 ```bash
-composer global require felixdorn/release-that
+composer global require felixdorn/release-that --dev
 ``` 
 
 Next: [Configuration](#configuration)
