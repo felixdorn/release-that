@@ -29,9 +29,8 @@ class Pushing extends AbstractAction
 
         $shouldPush = $this->output->confirm(
             sprintf(
-                'Push to %s (%s)',
-                $remote->getName(),
-                $remote->getPushURL()
+                'Push to %s',
+                $remote->getName()
             ),
             App::config('push') !== false
         );

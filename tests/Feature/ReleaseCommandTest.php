@@ -15,6 +15,7 @@ class ReleaseCommandTest extends TestCase
             ->artisan('run --dry-run')
             ->expectsQuestion('Choose the version', 'minor (0.1.0)')
             ->expectsQuestion('Commit `chore: release 0.1.0`', true)
-            ->expectsQuestion('Tag release with `0.1.0`', true);
+            ->expectsQuestion('Tag release with `0.1.0`', true)
+            ->expectsQuestion('Push to origin', true);
     }
 }
