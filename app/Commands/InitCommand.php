@@ -45,5 +45,7 @@ class InitCommand extends Command
             $this->output->error('Can not create configuration file');
             exit(1);
         }
+
+
     }
 }

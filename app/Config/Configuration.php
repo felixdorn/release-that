@@ -46,6 +46,11 @@ class Configuration
 
         $config = json_decode($config, true);
 
+        if (empty($config)) {
+            App::get()->output()->error('No configuration file found.');
+            die(1);
+        }
+
         $baseConfig = json_decode(
             File::get(base_path('stubs/.release.json')),
             true
