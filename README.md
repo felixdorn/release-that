@@ -8,6 +8,7 @@
 * Git commit, tag, push
 * Semver compliant
 * Hooks
+* Human readable configuration
 
 ## Table of contents
 * [Introduction](#introduction)
