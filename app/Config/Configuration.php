@@ -5,6 +5,7 @@ namespace App\Config;
 
 use App\App;
 use App\Events\Hook;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Nette\Schema\Processor;
 
@@ -15,7 +16,7 @@ class Configuration
      */
     private $filenames = [
         '.release.json',
-        '.release-that',       '.release-that.json',
+        '.release-that', '.release-that.json',
     ];
 
     /**
@@ -24,9 +25,8 @@ class Configuration
      */
     public function retrieve(?string $configFile = null): array
     {
-        $config = File::exists($configFile) ? $configFile : false;
         $cwd = App::cwd();
-
+        $config = File::exists($cwd . $configFile) ? $cwd . $configFile : false;
 
         foreach ($this->filenames as $filename) {
             if (File::exists($cwd . $filename)) {
@@ -39,12 +39,22 @@ class Configuration
             die(1);
         }
 
-        $config = (new Processor())->process(
+        (new Processor())->process(
             Schema::getSchema(),
             json_decode($config, true)
         );
 
-        $config = json_decode(json_encode($config), true);
+        $config = json_decode($config, true);
+
+        $baseConfig = json_decode(
+            File::get(base_path('stubs/.release.json')),
+            true
+        );
+
+        $config = array_merge(
+            $baseConfig,
+            $config
+        );
 
         foreach ($config['hooks'] as $index => $task) {
             if (empty($task)) {

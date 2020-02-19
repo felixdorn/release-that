@@ -33,5 +33,5 @@
             "notName": "/LICENSE|.*\\.md|.*\\.dist|Makefile|composer\\.json|composer\\.lock/"
         }
     ],
-    "output": "build/release-that"
+    "output": "release-that.phar"
 }

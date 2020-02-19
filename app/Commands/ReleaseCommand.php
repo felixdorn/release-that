@@ -63,7 +63,7 @@ class ReleaseCommand extends Command
         app()->singleton(
             'config',
             function () {
-                return (new Configuration())->retrieve();
+                return (new Configuration())->retrieve($this->option('config'));
             }
         );
 

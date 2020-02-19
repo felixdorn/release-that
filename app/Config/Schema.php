@@ -21,8 +21,7 @@ class Schema
                     'empty' => Expect::bool(false),
                     'stageAll' => Expect::bool(true)
                     ]
-                ),
-                false
+                ),false
             ),
             'push' => Expect::anyOf(
                 Expect::structure(
@@ -31,6 +30,8 @@ class Schema
                     'arguments' => Expect::string('')
                     ]
                 ),
+
+                Expect::array(),
                 false
             ),
             'tag' => Expect::anyOf(
@@ -39,8 +40,7 @@ class Schema
                     'name' => Expect::string('{version}'),
                     'message' => Expect::string('Release Tag {version}'),
                     ]
-                ),
-                false
+                ),false
             ),
             'hooks' => Expect::anyOf(
                 Expect::structure(

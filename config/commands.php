@@ -62,6 +62,7 @@ return [
     'hidden' => [
         SummaryCommand::class,
         HelpCommand::class,
+        BuildCommand::class
     ],
 
     /*
@@ -76,7 +77,6 @@ return [
     */
 
     'remove' => [
-        BuildCommand::class
     ],
 
 ];
