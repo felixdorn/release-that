@@ -1,8 +1,8 @@
 ![Release that logo](.github/logo.svg)
 
 ![Travis build status](https://api.travis-ci.org/felixdorn/release-that.svg?branch=master)
-![Release that license](https://img.shields.io/packagist/l/felixdorn/release-it)
-
+![Release that License](https://img.shields.io/packagist/l/felixdorn/release-it)
+![Release that Last Version](https://img.shields.io/packagist/v/felixdorn/release-that)
 # Release that! :rocket:
 * Execute tests, make builds, run anything
 * Git commit, tag, push
