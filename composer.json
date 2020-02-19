@@ -21,8 +21,7 @@
         "cypresslab/gitelephant": "^4.0",
         "laravel-zero/framework": "^6.0",
         "nette/schema": "^1.0",
-        "phlak/semver": "^3.0",
-        "symfony/yaml": "^4"
+        "phlak/semver": "^3.0"
     },
     "require-dev": {
         "mockery/mockery": "^1.0",
