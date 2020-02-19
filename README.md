@@ -1,9 +1,14 @@
-![Automated release system for PHP](.github/logo.svg)
+![Release that logo](.github/logo.svg)
+
+![Travis build status](https://api.travis-ci.org/felixdorn/release-that.svg?branch=master)
+![Release that License](https://img.shields.io/packagist/l/felixdorn/release-it)
+![Release that Last Version](https://img.shields.io/packagist/v/felixdorn/release-that)
 # Release that! :rocket:
 * Execute tests, make builds, run anything
 * Git commit, tag, push
 * Semver compliant
 * Hooks
+* Human readable configuration
 
 ## Table of contents
 * [Introduction](#introduction)
@@ -34,11 +39,11 @@ Release-that is useful when publishing a library to ensure things are done right
 
 Install `release-that` with 
 ```bash
-composer require felixdorn/release-that
+composer require felixdorn/release-that --dev
 ``` 
 or globally with 
 ```bash
-composer global require felixdorn/release-that
+composer global require felixdorn/release-that --dev
 ``` 
 
 Next: [Configuration](#configuration)
