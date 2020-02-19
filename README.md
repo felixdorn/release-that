@@ -92,6 +92,8 @@ Each one will take precedence to the one before: `.release-that.json` > `.releas
     }
 }
 
+> You can pass an array of command to run in hooks
+
 ```
 They are some variables exposed in `commit.message`,`tag.name` and `tag.message` :
 * `{date}`
@@ -99,6 +101,8 @@ They are some variables exposed in `commit.message`,`tag.name` and `tag.message`
 * `{repo.pushUrl}`
 * `{repo.fetchUrl}`
 * `{version}`
+
+
 
 ## Usage
 Once you configured `release-that`, you need to run 
