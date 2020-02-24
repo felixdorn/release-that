@@ -74,11 +74,13 @@ class ReleaseCommand extends Command
             }
         );
 
+
         $isDryRun = $this->option('dry-run');
 
         if ($isDryRun) {
             $this->warn('Running in dry-run mode.');
         }
+
 
         App::events()->emit('beforeAll');
 
@@ -103,6 +105,7 @@ ASCII
 
         $versionManager = new VersionManager();
 
+
         $version = false;
 
         if ($this->option('minor')) {
@@ -121,6 +124,8 @@ ASCII
             $version = new VersionHolder($this->option('custom'));
         }
 
+
+
         if ($version === false) {
             $version = $this->choice(
                 'Choose the version',
@@ -128,7 +133,7 @@ ASCII
                     sprintf('major (%s)', $versionManager->nextMajor()),
                     sprintf('minor (%s)', $versionManager->nextMinor()),
                     sprintf('patch (%s)', $versionManager->nextPatch()),
-                    sprintf('release canditate (%s)', $versionManager->nextReleaseCandidate()),
+                    sprintf('release candidate (%s)', $versionManager->nextReleaseCandidate()),
                     'custom'
                 ],
                 sprintf('minor (%s)', $versionManager->nextMinor())
@@ -137,7 +142,11 @@ ASCII
             $version = $versionManager->fromConsoleInput($version);
         }
 
-        App::version();
+
+
+        App::version((string)$version);
+
+
 
         (new Committing(
             App::input(),
@@ -145,17 +154,23 @@ ASCII
             App::config()
         ))->do($versionManager, $version);
 
+
+
         (new Tagging(
             App::input(),
             App::output(),
             App::config()
         ))->do($versionManager, $version);
 
+
+
         (new Pushing(
             App::input(),
             App::output(),
             App::config()
         ))->do($versionManager, $version);
+
+
 
 
         $this->comment(

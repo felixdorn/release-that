@@ -11,7 +11,7 @@ class Events
 {
 
     /**
-     * @param  array<int, string> $types
+     * @param array<int, string> $types
      * @throws Exception
      */
     public function emit(...$types): void

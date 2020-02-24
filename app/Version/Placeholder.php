@@ -17,14 +17,17 @@ class Placeholder
     {
         $remote = App::config('push.remote');
 
-        $placeholders = [
-            'version' => $version->__toString(),
-            'date' => date('Y-m-d'),
-            'newFilesCount' => App::git()->getWorkingTreeStatus()->all()->count(),
-            'repo.remote' => $remote  ? App::git()->getRemote($remote)->getName() : '(no remote set)',
-            'repo.pushUrl' => $remote   ? App::git()->getRemote($remote)->getPushURL() : '(no remote set)',
-            'repo.fetchUrl' => $remote ? App::git()->getRemote($remote)->getFetchURL() : '(no remote set)',
-        ];
+        if ($remote) {
+            $gitRemote = App::git()->getRemote($remote);
+            $placeholders = [
+                'repo.remote' => $gitRemote->getName(),
+                'repo.pushUrl' => $gitRemote->getPushURL(),
+                'repo.fetchUrl' => $gitRemote->getFetchURL(),
+            ];
+        }
+
+        $placeholders['version'] = (string)$version;
+        $placeholders['date'] = date('Y-m-d');
 
         foreach ($placeholders as $key => $value) {
             $message = str_replace(

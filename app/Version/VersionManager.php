@@ -109,9 +109,14 @@ class VersionManager
     {
         /** @var VersionHolder $current */
         $current = $this->currentTag();
-
         if (strpos((string)$current, '-rc.') === false) {
             return $current->setVersion($current . '-rc.1');
+        } else {
+            $tag = $current->preRelease;
+            [$name, $value] = explode('.', $tag);
+
+            $next = (int)$value;
+            return new VersionHolder(str_replace($current->preRelease, 'rc.' . ++$next, $current->__toString()));
         }
 
 
