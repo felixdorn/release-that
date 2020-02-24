@@ -7,7 +7,7 @@
 * Execute tests, make builds, run anything
 * Git commit, tag, push
 * Semver compliant
-* Release candidate
+* Pre-release
 * Hooks
 * Human readable configuration
 
