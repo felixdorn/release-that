@@ -10,13 +10,15 @@ use PHLAK\SemVer\Version as VersionHolder;
 class VersionManager
 {
     /**
-     * @param  string $version
+     * @param string $version
      * @return VersionHolder
      */
     public function fromConsoleInput(string $version): VersionHolder
     {
         if ($version !== 'custom') {
-            $version = trim(explode(' ', $version)[1], '()');
+            $version = explode(' ', $version);
+
+            $version = trim($version[array_key_last($version)], '()');
 
             return new VersionHolder($version);
         }
@@ -68,7 +70,7 @@ class VersionManager
     }
 
     /**
-     * @param  VersionHolder $version
+     * @param VersionHolder $version
      * @return string
      */
     public function getCommit(VersionHolder $version): string
@@ -80,7 +82,7 @@ class VersionManager
     }
 
     /**
-     * @param  VersionHolder $version
+     * @param VersionHolder $version
      * @return string
      */
     public function getTag(VersionHolder $version): string
@@ -92,7 +94,7 @@ class VersionManager
     }
 
     /**
-     * @param  VersionHolder $version
+     * @param VersionHolder $version
      * @return string
      */
     public function getTagMessage(VersionHolder $version): string
@@ -101,5 +103,18 @@ class VersionManager
             App::config('tag.message'),
             $version
         );
+    }
+
+    public function nextReleaseCandidate()
+    {
+        /** @var VersionHolder $current */
+        $current = $this->currentTag();
+
+        if (strpos((string)$current, '-rc.') === false) {
+            return $current->setVersion($current . '-rc.1');
+        }
+
+
+        return $current;
     }
 }

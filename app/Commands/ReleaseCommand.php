@@ -128,6 +128,7 @@ ASCII
                     sprintf('major (%s)', $versionManager->nextMajor()),
                     sprintf('minor (%s)', $versionManager->nextMinor()),
                     sprintf('patch (%s)', $versionManager->nextPatch()),
+                    sprintf('release canditate (%s)', $versionManager->nextReleaseCandidate()),
                     'custom'
                 ],
                 sprintf('minor (%s)', $versionManager->nextMinor())
