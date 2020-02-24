@@ -20,7 +20,6 @@ class Placeholder
         $placeholders = [
             'version' => $version->__toString(),
             'date' => date('Y-m-d'),
-
             'newFilesCount' => App::git()->getWorkingTreeStatus()->all()->count(),
             'repo.remote' => $remote  ? App::git()->getRemote($remote)->getName() : '(no remote set)',
             'repo.pushUrl' => $remote   ? App::git()->getRemote($remote)->getPushURL() : '(no remote set)',

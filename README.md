@@ -12,9 +12,9 @@
 
 ## Table of contents
 * [Introduction](#introduction)
-* [Features](#features)
 * [Getting started](#getting-started)
 * [Configuration](#configuration)
+* [Usage](#usage)
 * [Security](#security)
 * [Credit](#credits)
 * [License](#licensing)
