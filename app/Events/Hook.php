@@ -28,14 +28,22 @@ class Hook
             return 0;
         }
 
-        exec(sprintf('%s 2>&1', $this->command), $output, $ret);
-        App::output()->write('');
+        $git = App::git();
+        $command = str_replace('{repo.remote}', $remote = App::config('push.remote'), $this->command);
+        $command = str_replace('{repo.pushUrl}', $git->getRemote($remote)->getPushURL(), $command);
+        $command = str_replace('{repo.fetchUrl}', $git->getRemote($remote)->getFetchURL(), $command);
+        $command = str_replace('{version}', App::version(), $command);
 
+        $result = exec(sprintf('%s 2>&1', $command), $output, $ret);
+
+        App::output()->write($result);
 
         if ($ret !== 0) {
             App::output()->error(
                 sprintf('Task %sfailed with exit-code %s', $this->name !== null ? $this->name . ' ' : '', $ret)
             );
+
+            exit($ret);
         }
 
         return 0;

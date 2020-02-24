@@ -33,6 +33,10 @@ class App
      * @var Repository
      */
     private static $repository;
+    /**
+     * @var string
+     */
+    private static $version = null;
 
 
     /**
@@ -133,5 +137,16 @@ class App
     public static function events(): Events
     {
         return new Events();
+    }
+
+    public static function version(string $version = null)
+    {
+        self::get();
+
+        if ($version !== null) {
+            self::$version = $version;
+        }
+
+        return self::$version;
     }
 }

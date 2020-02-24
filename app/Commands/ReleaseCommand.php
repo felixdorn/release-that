@@ -136,6 +136,8 @@ ASCII
             $version = $versionManager->fromConsoleInput($version);
         }
 
+        App::version();
+
         (new Committing(
             App::input(),
             App::output(),
