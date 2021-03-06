@@ -98,7 +98,7 @@ Each one will take precedence to the one before: `.release-that.json` > `.releas
     }
 }
 
-> You can pass an array of command to run in hooks
+You can pass an array of command to run in hooks
 
 ```
 They are some variables exposed in `commit.message`,`tag.name` and `tag.message` :
