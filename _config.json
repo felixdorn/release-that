@@ -1,0 +1,10 @@
+{
+  "release_notes": {
+    "commit_format": "* :hash: :message",
+    "title": "Release :version"
+  },
+  "before_release": [],
+  "after_release": [],
+  "assets": [],
+  "tag_message": "Version :tag"
+}
