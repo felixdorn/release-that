@@ -7,7 +7,7 @@ Rt, short for release that, is a tool for quickly creating GitHub releases.
 ```bash
 curl -L https://github.com/felixdorn/rt/releases/latest/download/rt -o rt
 chmod +x ./rt
-mv ./rt /usr/bin/rt
+sudo mv ./rt /usr/bin/rt
 ```
 
 Once you have installed the binary, you'll need to login to GitHub.
