@@ -16,7 +16,7 @@ Once you have installed the binary, you'll need to login to GitHub.
 rt --login
 ```
 
-Your personal access token is stored in `~/.rtauth` with restricted permissions (0644).
+Your personal access token is stored in `~/.rtauth` with restricted permissions (0600).
 
 ## Configuration
 

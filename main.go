@@ -66,7 +66,7 @@ func main() {
 				home, err := homedir.Dir()
 				check(err)
 
-				err = os.WriteFile(home+"/.rtauth", token, 0644)
+				err = os.WriteFile(home+"/.rtauth", token, 0600)
 				check(err)
 
 				fmt.Printf("\n\n%sYour token has been saved.%s\n", Green.Fg(), Stop)
