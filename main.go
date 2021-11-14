@@ -135,8 +135,8 @@ func execute() error {
 	remote, err := Repository.Remote(Config.Remote)
 	check(err)
 
-	nextVersion := getNextVersion()
-	releaseNotes := buildReleaseNotes()
+	current, nextVersion := getNextVersion()
+	releaseNotes := buildReleaseNotes(current)
 	owner, project := findOwnerAndProjectName(remote.Config().URLs[0])
 
 	head, err := Repository.Head()
@@ -193,7 +193,7 @@ func execute() error {
 	return nil
 }
 
-func getNextVersion() string {
+func getNextVersion() (*plumbing.Reference, string) {
 	tag := getLatestTag()
 
 	var current *Version
@@ -207,16 +207,16 @@ func getNextVersion() string {
 	}
 
 	if patch {
-		return current.IncPatch().String()
+		return tag, current.IncPatch().String()
 	} else if minor {
-		return current.IncMinor().String()
+		return tag, current.IncMinor().String()
 	} else if major {
-		return current.IncMajor().String()
+		return tag, current.IncMajor().String()
 	}
 
 	next, err := NewVersion(customVersion)
 	check(err)
-	return next.String()
+	return tag, next.String()
 }
 
 func getLatestTag() *plumbing.Reference {
@@ -256,11 +256,11 @@ func findOwnerAndProjectName(remoteUrl string) (string, string) {
 	return path[0], path[1]
 }
 
-func buildReleaseNotes() string {
+func buildReleaseNotes(latestTag *plumbing.Reference) string {
 	var buffer bytes.Buffer
 
 	commits, err := Repository.Log(&git.LogOptions{
-		From: plumbing.NewHash("HEAD"),
+		From: latestTag.Hash(),
 		All:  true,
 	})
 	check(err)
