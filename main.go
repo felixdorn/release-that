@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/google/go-github/v40/github"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -15,7 +14,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"time"
 )
@@ -35,6 +33,9 @@ var patch bool
 var minor bool
 var major bool
 var customVersion string
+var dryRun bool
+var skipHooks string
+var quiet bool
 
 var Repository *git.Repository
 
@@ -89,8 +90,10 @@ func main() {
 	cli.Flags().BoolVar(&major, "major", false, "Increment by a major version")
 	cli.Flags().StringVar(&customVersion, "custom", "", "Set a new custom version")
 	cli.Flags().BoolVar(&login, "login", false, "Login to GitHub")
-	cli.Flags().BoolVar(&noAnsi, "no-ansi", false, "fmt.Printf in monochrome")
-
+	cli.Flags().BoolVar(&noAnsi, "no-ansi", false, "Disable ANSI colors")
+	cli.Flags().BoolVar(&dryRun, "dry-run", true, "Run without making any changes")
+	cli.Flags().StringVar(&skipHooks, "skip-hooks", "", "Skip one or many hooks separated by a comma")
+	cli.Flags().BoolVarP(&quiet, "quiet", "q", false, "Reduced output")
 	cli.SilenceErrors = true
 	cli.SilenceUsage = true
 	err := cli.Execute()
@@ -123,13 +126,15 @@ func init() {
 }
 
 func execute() error {
-	for _, hook := range Config.BeforeRelease {
-		cmd := exec.Command("sh", "-c", hook)
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		err := cmd.Run()
-		check(err)
+	if shouldSkipHook("before_release") {
+		for _, hook := range Config.BeforeRelease {
+			cmd := exec.Command("sh", "-c", hook)
+			cmd.Stdin = os.Stdin
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			err := cmd.Run()
+			check(err)
+		}
 	}
 
 	remote, err := Repository.Remote(Config.Remote)
@@ -142,54 +147,63 @@ func execute() error {
 	head, err := Repository.Head()
 	check(err)
 
-	// create a tag in the Repository
-	Repository.CreateTag(
-		nextVersion,
-		head.Hash(),
-		&git.CreateTagOptions{
-			Message: Config.TagMessage.Resolve(map[string]string{
-				"tag":     nextVersion,
-				"version": nextVersion,
-			}),
-		},
-	)
+	if !dryRun {
+		_, err = Repository.CreateTag(
+			nextVersion,
+			head.Hash(),
+			&git.CreateTagOptions{
+				Message: Config.TagMessage.Resolve(map[string]string{
+					"tag":     nextVersion,
+					"version": nextVersion,
+				}),
+			},
+		)
+		check(err)
+	}
 
 	name := Config.ReleaseNotes.Title.Resolve(map[string]string{
 		"version": nextVersion,
 		"tag":     nextVersion,
 	})
 
-	release, _, err := GithubClient.Repositories.CreateRelease(context.Background(), owner, project, &github.RepositoryRelease{
-		Name:    &name,
-		TagName: &nextVersion,
-		Body:    &releaseNotes,
-	})
-	check(err)
-
-	for _, asset := range Config.Assets {
-		file, err := os.Open(asset)
+	if !dryRun {
+		release, _, err := GithubClient.Repositories.CreateRelease(context.Background(), owner, project, &github.RepositoryRelease{
+			Name:    &name,
+			TagName: &nextVersion,
+			Body:    &releaseNotes,
+		})
 		check(err)
 
-		_, _, err = GithubClient.Repositories.UploadReleaseAsset(context.Background(), owner, project, *release.ID, &github.UploadOptions{
-			Name: filepath.Base(asset),
-		}, file)
-		check(err)
+		for _, asset := range Config.Assets {
+			file, err := os.Open(asset)
+			check(err)
+
+			_, _, err = GithubClient.Repositories.UploadReleaseAsset(context.Background(), owner, project, *release.ID, &github.UploadOptions{
+				Name: filepath.Base(asset),
+			}, file)
+			check(err)
+		}
 	}
 
-	for _, hook := range Config.AfterRelease {
-		cmd := exec.Command("sh", "-c", hook)
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		err := cmd.Run()
-		check(err)
+	if shouldSkipHook("after_release") {
+		for _, hook := range Config.AfterRelease {
+			cmd := exec.Command("sh", "-c", hook)
+			cmd.Stdin = os.Stdin
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			err := cmd.Run()
+			check(err)
+		}
 	}
 
-	fmt.Printf("Release %s\n\n", nextVersion)
+	if !quiet {
+		fmt.Printf("Release %s\n\n", nextVersion)
+		fmt.Printf(releaseNotes)
+		fmt.Printf("\nReleased in %.2fs\n", (float64(time.Now().UnixNano())-float64(Start.UnixNano()))/1000_000_000.0)
+	} else {
+		fmt.Printf(nextVersion)
+	}
 
-	fmt.Printf(releaseNotes)
-
-	fmt.Printf("\nReleased in %.2fs\n", (float64(time.Now().UnixNano())-float64(Start.UnixNano()))/1000_000_000.0)
 	return nil
 }
 
@@ -259,31 +273,33 @@ func findOwnerAndProjectName(remoteUrl string) (string, string) {
 func buildReleaseNotes(latestTag *plumbing.Reference) string {
 	var buffer bytes.Buffer
 
-	commits, err := Repository.Log(&git.LogOptions{
-		From: latestTag.Hash(),
-	})
+	cmd := exec.Command("git", "log", "--pretty=%H", latestTag.Name().Short()+"..HEAD")
+	out, err := cmd.CombinedOutput()
 	check(err)
-
-	_ = commits.ForEach(func(commit *object.Commit) error {
-		message := strings.TrimSpace(commit.Message)
-
-		ignorePattern := regexp.MustCompile(Config.ReleaseNotes.Ignore)
-
-		if Config.ReleaseNotes.Ignore != "" && ignorePattern.MatchString(message) {
-			return nil
+	for _, c := range strings.Split(string(out), "\n")  {
+		if c == "" {
+			continue
 		}
 
-		hash := commit.Hash.String()
+		// get the commit message
+		commit, err := Repository.CommitObject(plumbing.NewHash(c))
+		check(err)
+
 		_, _ = fmt.Fprintf(&buffer, Config.ReleaseNotes.CommitFormat.Resolve(map[string]string{
-			"hash":         hash[0:8],
-			"longHash":     hash,
+			"hash":         c[0:8],
+			"longHash":     c,
 			"message":      commit.Message,
 			"author.name":  commit.Author.Name,
 			"author.email": commit.Author.Email,
 		}))
-
-		return nil
-	})
+	}
 
 	return buffer.String()
+}
+
+func shouldSkipHook(hook string) bool {
+	if skipHooks == "" {
+		return false
+	}
+	return strings.Contains(skipHooks, hook)
 }
