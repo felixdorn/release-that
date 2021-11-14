@@ -73,3 +73,20 @@ rt --custom 4.24.5-linux+stripped
 ```
 
 The custom version must be a valid semver version.
+
+* `--skip-hooks`
+
+  Skips the execution of the `before_release` and `after_release` hooks. You may specify which hooks to
+  skip `--skip-hooks before_release,after_release`. You may also pass `no` to run every hook (the default).
+
+* `--quiet`
+
+  Suppresses the output of the release process, the only thing printed is the released version.
+
+* `--dry-run`
+
+  Prints the release notes and the release tag, but does not actually create the release.
+
+* `--no-ansi`
+
+  Disables ANSI colors in the output.

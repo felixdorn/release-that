@@ -91,8 +91,8 @@ func main() {
 	cli.Flags().StringVar(&customVersion, "custom", "", "Set a new custom version")
 	cli.Flags().BoolVar(&login, "login", false, "Login to GitHub")
 	cli.Flags().BoolVar(&noAnsi, "no-ansi", false, "Disable ANSI colors")
-	cli.Flags().BoolVar(&dryRun, "dry-run", true, "Run without making any changes")
-	cli.Flags().StringVar(&skipHooks, "skip-hooks", "", "Skip one or many hooks separated by a comma")
+	cli.Flags().BoolVar(&dryRun, "dry-run", false, "Run without making any changes")
+	cli.Flags().StringVar(&skipHooks, "skip-hooks", "no", "Skip one or many hooks separated by a comma")
 	cli.Flags().BoolVarP(&quiet, "quiet", "q", false, "Reduced output")
 	cli.SilenceErrors = true
 	cli.SilenceUsage = true
@@ -276,7 +276,7 @@ func buildReleaseNotes(latestTag *plumbing.Reference) string {
 	cmd := exec.Command("git", "log", "--pretty=%H", latestTag.Name().Short()+"..HEAD")
 	out, err := cmd.CombinedOutput()
 	check(err)
-	for _, c := range strings.Split(string(out), "\n")  {
+	for _, c := range strings.Split(string(out), "\n") {
 		if c == "" {
 			continue
 		}
@@ -298,8 +298,13 @@ func buildReleaseNotes(latestTag *plumbing.Reference) string {
 }
 
 func shouldSkipHook(hook string) bool {
-	if skipHooks == "" {
+	if skipHooks == "no" {
 		return false
 	}
+
+	if skipHooks == "" {
+		return true
+	}
+
 	return strings.Contains(skipHooks, hook)
 }
