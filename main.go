@@ -261,7 +261,6 @@ func buildReleaseNotes(latestTag *plumbing.Reference) string {
 
 	commits, err := Repository.Log(&git.LogOptions{
 		From: latestTag.Hash(),
-		All:  true,
 	})
 	check(err)
 
