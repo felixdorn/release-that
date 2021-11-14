@@ -8,8 +8,10 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/google/go-github/v40/github"
+	"github.com/me/rt/globals"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	"net/url"
 	"os"
 	"os/exec"
@@ -36,6 +38,8 @@ var customVersion string
 var dryRun bool
 var skipHooks string
 var quiet bool
+var selfUpdate bool
+var version bool
 
 var Repository *git.Repository
 
@@ -44,6 +48,11 @@ func main() {
 		Use:   "rt",
 		Short: "Automated release system for GitHub",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if version {
+				fmt.Println("Rt", globals.Version)
+				return nil
+			}
+
 			if initialize {
 				_, err := os.Stat("rt.json")
 
@@ -75,6 +84,32 @@ func main() {
 				return nil
 			}
 
+			if selfUpdate {
+				// get the latest release from github
+				release, _, err := GithubClient.Repositories.GetLatestRelease(context.Background(), "felixdorn", "release-that")
+				check(err)
+
+				asset, _, err := GithubClient.Repositories.DownloadReleaseAsset(context.Background(), "felixdorn", "release-that", *release.Assets[0].ID, GithubClient.Client())
+				check(err)
+
+				body, err := ioutil.ReadAll(asset)
+				check(err)
+
+				err = os.WriteFile("rt.tmp", body, 0777)
+				check(err)
+
+				// rename the rt.tmp to rt
+				err = os.Rename("rt.tmp", "rt")
+				check(err)
+
+				// chmod rt to 0777
+				err = os.Chmod("rt", 0777)
+				check(err)
+
+				fmt.Printf("%sSuccessfully updated to version %s%s.%s\n", Green.Fg(), White.Fg(), *release.TagName, Stop)
+				return nil
+			}
+
 			if !patch && !minor && !major && customVersion == "" {
 				return fmt.Errorf("one of the following flags is required --patch, --minor, --major, --custom")
 			}
@@ -94,6 +129,8 @@ func main() {
 	cli.Flags().BoolVar(&dryRun, "dry-run", false, "Run without making any changes")
 	cli.Flags().StringVar(&skipHooks, "skip-hooks", "no", "Skip one or many hooks separated by a comma")
 	cli.Flags().BoolVarP(&quiet, "quiet", "q", false, "Reduced output")
+	cli.Flags().BoolVarP(&selfUpdate, "self-update", "u", false, "Update rt to the latest version")
+	cli.Flags().BoolVarP(&version, "version", "v", false, "Print the version")
 	cli.SilenceErrors = true
 	cli.SilenceUsage = true
 	err := cli.Execute()
@@ -126,17 +163,6 @@ func init() {
 }
 
 func execute() error {
-	if shouldSkipHook("before_release") {
-		for _, hook := range Config.BeforeRelease {
-			cmd := exec.Command("sh", "-c", hook)
-			cmd.Stdin = os.Stdin
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			err := cmd.Run()
-			check(err)
-		}
-	}
-
 	remote, err := Repository.Remote(Config.Remote)
 	check(err)
 
@@ -146,6 +172,20 @@ func execute() error {
 
 	head, err := Repository.Head()
 	check(err)
+
+	if !shouldSkipHook("before_release") {
+		for _, hook := range Config.BeforeRelease {
+			cmd := exec.Command("sh", "-c", Placeholder{value: hook}.Resolve(map[string]string{
+				"version": nextVersion,
+				"tag":     nextVersion,
+			}))
+			cmd.Stdin = os.Stdin
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			err := cmd.Run()
+			check(err)
+		}
+	}
 
 	if !dryRun {
 		_, err = Repository.CreateTag(
@@ -185,7 +225,7 @@ func execute() error {
 		}
 	}
 
-	if shouldSkipHook("after_release") {
+	if !shouldSkipHook("after_release") {
 		for _, hook := range Config.AfterRelease {
 			cmd := exec.Command("sh", "-c", hook)
 			cmd.Stdin = os.Stdin
@@ -271,6 +311,10 @@ func findOwnerAndProjectName(remoteUrl string) (string, string) {
 }
 
 func buildReleaseNotes(latestTag *plumbing.Reference) string {
+	if latestTag == nil {
+		return "Initial release.\n"
+	}
+
 	var buffer bytes.Buffer
 
 	cmd := exec.Command("git", "log", "--pretty=%H", latestTag.Name().Short()+"..HEAD")

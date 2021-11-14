@@ -90,3 +90,11 @@ The custom version must be a valid semver version.
 * `--no-ansi`
 
   Disables ANSI colors in the output.
+
+* `--self-update`
+
+  Updates the `rt` binary to the latest version.
+
+* `--version`
+
+  Prints the current version of `rt`.
