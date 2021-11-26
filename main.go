@@ -95,14 +95,14 @@ func main() {
 				body, err := ioutil.ReadAll(asset)
 				check(err)
 
-				err = os.WriteFile("rt.tmp", body, 0777)
-				check(err)
-
 				executable, err := os.Executable()
 				check(err)
 
+				err = os.WriteFile(executable+".tmp", body, 0777)
+				check(err)
+
 				// rename the rt.tmp to rt
-				err = os.Rename("rt.tmp", executable)
+				err = os.Rename(executable+".tmp", executable)
 				check(err)
 
 				// chmod rt to 0777
