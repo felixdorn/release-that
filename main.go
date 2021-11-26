@@ -89,6 +89,10 @@ func main() {
 				release, _, err := GithubClient.Repositories.GetLatestRelease(context.Background(), "felixdorn", "release-that")
 				check(err)
 
+				if len(release.Assets) == 0 {
+					return fmt.Errorf("no assets found for this release, can't update")
+				}
+
 				asset, _, err := GithubClient.Repositories.DownloadReleaseAsset(context.Background(), "felixdorn", "release-that", *release.Assets[0].ID, GithubClient.Client())
 				check(err)
 

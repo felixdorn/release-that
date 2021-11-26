@@ -17,27 +17,33 @@ func init() {
 
 	_, err = os.Stat(home + "/.rtauth")
 
+	isUpdating := false
+
 	for _, arg := range os.Args {
 		if arg == "--login" || arg == "--help" || arg == "--self-update" {
-			return
+			isUpdating = true
 		}
 	}
 
-	if os.IsNotExist(err) {
+	if !isUpdating && os.IsNotExist(err) {
 		fmt.Printf("%sYou are not connected to GitHub.%s\n", Yellow.Fg(), Stop)
 		fmt.Printf("%sPlease create a token at https://github.com/settings/tokens/new?scopes=repo.%s\n", Yellow.Fg(), Stop)
 		fmt.Printf("%sThen run `rt --login` and paste your token when asked.%s\n", Yellow.Fg(), Stop)
 		os.Exit(1)
 	}
 
-	bytes, err := os.ReadFile(home + "/.rtauth")
-	check(err)
+	if !isUpdating {
+		bytes, err := os.ReadFile(home + "/.rtauth")
 
-	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(&oauth2.Token{
-		AccessToken: string(bytes),
-	})
-	tc := oauth2.NewClient(ctx, ts)
-	GithubClient = github.NewClient(tc)
+		check(err)
+		ctx := context.Background()
+		ts := oauth2.StaticTokenSource(&oauth2.Token{
+			AccessToken: string(bytes),
+		})
+		tc := oauth2.NewClient(ctx, ts)
+		GithubClient = github.NewClient(tc)
+	} else {
+		GithubClient = github.NewClient(nil)
+	}
 
 }
