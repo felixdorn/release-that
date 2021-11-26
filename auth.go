@@ -18,7 +18,7 @@ func init() {
 	_, err = os.Stat(home + "/.rtauth")
 
 	for _, arg := range os.Args {
-		if arg == "--login" || arg == "--help" {
+		if arg == "--login" || arg == "--help" || arg == "--self-update" {
 			return
 		}
 	}
