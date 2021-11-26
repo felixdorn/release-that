@@ -98,8 +98,11 @@ func main() {
 				err = os.WriteFile("rt.tmp", body, 0777)
 				check(err)
 
+				executable, err := os.Executable()
+				check(err)
+
 				// rename the rt.tmp to rt
-				err = os.Rename("rt.tmp", "rt")
+				err = os.Rename("rt.tmp", executable)
 				check(err)
 
 				// chmod rt to 0777
