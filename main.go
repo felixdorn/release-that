@@ -299,7 +299,7 @@ func findOwnerAndProjectName(remoteUrl string) (string, string) {
 			"/",
 		)
 
-		return op[0], op[1]
+		return op[0], strings.TrimSuffix(op[1], ".git")
 	}
 
 	u, err := url.Parse(remoteUrl)
@@ -307,7 +307,7 @@ func findOwnerAndProjectName(remoteUrl string) (string, string) {
 
 	path := strings.Split(u.Path, "/")
 
-	return path[0], path[1]
+	return path[0], strings.TrimSuffix(path[1], path[1])
 }
 
 func buildReleaseNotes(latestTag *plumbing.Reference) string {
