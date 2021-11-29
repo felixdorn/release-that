@@ -60,7 +60,11 @@ You can use various placeholders in the following keys:
     * `:message`
     * `:author.name`
     * `:author.email`
-
+* before_release:
+  * `:tag` / `:version`
+* after_release:
+  * `:tag` / `:version`
+  
 ## Usage
 
 You can release a new version with the following command:

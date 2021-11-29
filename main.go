@@ -218,7 +218,10 @@ func execute() error {
 
 	if !shouldSkipHook("after_release") {
 		for _, hook := range Config.AfterRelease {
-			cmd := exec.Command("sh", "-c", hook)
+			cmd := exec.Command("sh", "-c", Placeholder{value: hook}.Resolve(map[string]string{
+				"version": nextVersion,
+				"tag":     nextVersion,
+			}))
 			cmd.Stdin = os.Stdin
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
