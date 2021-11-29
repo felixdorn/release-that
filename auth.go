@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
+
 	"github.com/google/go-github/v40/github"
 	"github.com/mitchellh/go-homedir"
 	"golang.org/x/oauth2"
-	"os"
 )
 
 var GithubClient *github.Client
@@ -17,22 +18,22 @@ func init() {
 
 	_, err = os.Stat(home + "/.rtauth")
 
-	isUpdating := false
+	runAsGuest := false
 
 	for _, arg := range os.Args {
-		if arg == "--login" || arg == "--help" || arg == "--self-update" {
-			isUpdating = true
+		if arg == "--login" || arg == "--help" || arg == "--self-update" || arg == "--init" || arg == "--version" {
+			runAsGuest = true
 		}
 	}
 
-	if !isUpdating && os.IsNotExist(err) {
+	if !runAsGuest && os.IsNotExist(err) {
 		fmt.Printf("%sYou are not connected to GitHub.%s\n", Yellow.Fg(), Stop)
 		fmt.Printf("%sPlease create a token at https://github.com/settings/tokens/new?scopes=repo.%s\n", Yellow.Fg(), Stop)
 		fmt.Printf("%sThen run `rt --login` and paste your token when asked.%s\n", Yellow.Fg(), Stop)
 		os.Exit(1)
 	}
 
-	if !isUpdating {
+	if !runAsGuest {
 		bytes, err := os.ReadFile(home + "/.rtauth")
 
 		check(err)
