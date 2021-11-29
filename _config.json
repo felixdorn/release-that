@@ -1,4 +1,6 @@
 {
+  "$id": "https://github.com/felixdorn/release-that/blob/main/schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "release_notes": {
     "commit_format": "* :hash: :message",
     "title": "Release :version"
