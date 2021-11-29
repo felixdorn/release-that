@@ -11,31 +11,31 @@
         },
         "title": {
           "type": "string"
-}
+        }
       },
       "additionalProperties": false
     },
-      "before_release": {
-        "type": "array",
-        "items": {
-          "type": "string",
-        }
-      },
-      "after_release": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
-      },
-      "assets": {
-        "type": "string",
-        "items": {
-          "type": "string"
-        }
-      },
-      "tag_message": {
+    "before_release": {
+      "type": "array",
+      "items": {
         "type": "string"
       }
+    },
+    "after_release": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "assets": {
+      "type": "string",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tag_message": {
+      "type": "string"
+    }
   },
   "additionalProperties": false
 }

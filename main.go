@@ -5,12 +5,6 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/google/go-github/v40/github"
-	"github.com/me/rt/globals"
-	"github.com/mitchellh/go-homedir"
-	"github.com/spf13/cobra"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -18,6 +12,13 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/google/go-github/v40/github"
+	"github.com/me/rt/globals"
+	"github.com/mitchellh/go-homedir"
+	"github.com/spf13/cobra"
 )
 
 //go:embed _config.json
@@ -177,9 +178,6 @@ func execute() error {
 	releaseNotes := buildReleaseNotes(current)
 	owner, project := findOwnerAndProjectName(remote.Config().URLs[0])
 
-	head, err := Repository.Head()
-	check(err)
-
 	if !shouldSkipHook("before_release") {
 		for _, hook := range Config.BeforeRelease {
 			cmd := exec.Command("sh", "-c", Placeholder{value: hook}.Resolve(map[string]string{
@@ -192,20 +190,6 @@ func execute() error {
 			err := cmd.Run()
 			check(err)
 		}
-	}
-
-	if !dryRun {
-		_, err = Repository.CreateTag(
-			nextVersion,
-			head.Hash(),
-			&git.CreateTagOptions{
-				Message: Config.TagMessage.Resolve(map[string]string{
-					"tag":     nextVersion,
-					"version": nextVersion,
-				}),
-			},
-		)
-		check(err)
 	}
 
 	name := Config.ReleaseNotes.Title.Resolve(map[string]string{
@@ -243,12 +227,16 @@ func execute() error {
 		}
 	}
 
+	if !dryRun {
+		Repository.Fetch(nil)
+	}
+
 	if !quiet {
 		fmt.Printf("Release %s\n\n", nextVersion)
-		fmt.Printf(releaseNotes)
+		fmt.Print(releaseNotes)
 		fmt.Printf("\nReleased in %.2fs\n", (float64(time.Now().UnixNano())-float64(Start.UnixNano()))/1000_000_000.0)
 	} else {
-		fmt.Printf(nextVersion)
+		fmt.Print(nextVersion)
 	}
 
 	return nil
