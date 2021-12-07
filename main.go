@@ -233,7 +233,11 @@ func execute() error {
 	if !quiet {
 		fmt.Printf("Release %s\n\n", nextVersion)
 		fmt.Print(releaseNotes)
-		fmt.Print("\nRun `git fetch` to get the new remote tag synced with your repository.\n")
+		if len(releaseNotes) > 0 {
+			fmt.Println()
+		}
+
+		fmt.Print("* Run `git fetch` to retrieve the new tag created only on the remote.\n")
 		fmt.Printf("\nReleased in %.2fs\n", (float64(time.Now().UnixNano())-float64(Start.UnixNano()))/1000_000_000.0)
 	} else {
 		fmt.Print(nextVersion)
