@@ -111,7 +111,7 @@ func main() {
 				check(err)
 
 				// chmod rt to 0777
-				err = os.Chmod(executable+"rt", 0777)
+				err = os.Chmod(executable, 0777)
 				check(err)
 
 				fmt.Printf("%sSuccessfully updated to version %s%s.%s\n", Green.Fg(), White.Fg(), *release.TagName, Stop)
