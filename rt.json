@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/felixdorn/release-that/main/schema.json",
+  "release_notes": {
+    "commit_format": "* :hash: :message",
+    "title": "Release :version",
+  },
+  "before_release": [
+    "go build -ldflags='-w -s -X github.com/me/rt/globals.Version=:version' -gcflags=all='-l'"
+  ],
+  "after_release": [],
+  "assets": [
+    "./rt"
+  ],
+  "tag_message": "Version :tag",  
+}

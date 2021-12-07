@@ -327,10 +327,24 @@ func buildReleaseNotes(latestTag *plumbing.Reference) string {
 		commit, err := Repository.CommitObject(plumbing.NewHash(c))
 		check(err)
 
+		messageLines := strings.Split(commit.Message, "\n")
+
+		var message string
+
+		if len(messageLines) == 0 {
+			continue
+		} else {
+			message = messageLines[0]
+		}
+
+		if len(messageLines) > 1 {
+			message += "..."
+		}
+
 		_, _ = fmt.Fprintf(&buffer, strings.TrimSpace(Config.ReleaseNotes.CommitFormat.Resolve(map[string]string{
 			"hash":         c[0:8],
 			"longHash":     c,
-			"message":      commit.Message,
+			"message":      message,
 			"author.name":  commit.Author.Name,
 			"author.email": commit.Author.Email,
 		}))+"\n")

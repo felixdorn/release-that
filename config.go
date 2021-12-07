@@ -51,15 +51,7 @@ var Config *Configuration
 func init() {
 	_, err := os.Stat("rt.json")
 
-	defaultConfig := Configuration{
-		Remote: "origin",
-		ReleaseNotes: ReleaseNotesOptions{
-			Title:        Placeholder{value: "Release :version"},
-			CommitFormat: Placeholder{value: "* :hash: :message"},
-			Ignore:       "",
-		},
-		TagMessage: Placeholder{value: "Version :tag"},
-	}
+	defaultConfig := Configuration{}
 
 	if os.IsNotExist(err) {
 		Config = &defaultConfig

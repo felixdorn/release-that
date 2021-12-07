@@ -3,6 +3,10 @@
   "title": "Release that config",
   "type": "object",
   "properties": {
+    "origin": {
+      "type": "string"
+    },
+    
     "release_notes": {
       "type": "object",
       "properties": {
@@ -10,6 +14,9 @@
           "type": "string"
         },
         "title": {
+          "type": "string"
+        },
+        "ignore": {
           "type": "string"
         }
       },
@@ -28,7 +35,7 @@
       }
     },
     "assets": {
-      "type": "string",
+      "type": "array",
       "items": {
         "type": "string"
       }
