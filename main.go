@@ -333,11 +333,11 @@ func buildReleaseNotes(latestTag *plumbing.Reference) string {
 
 		if len(messageLines) == 0 {
 			continue
-		} else {
-			message = messageLines[0]
 		}
 
-		if len(messageLines) > 1 {
+		message = messageLines[0]
+
+		if len(messageLines) > 2 {
 			message += "..."
 		}
 
