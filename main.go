@@ -133,7 +133,7 @@ func main() {
 	cli.Flags().BoolVarP(&major, "major", "M", false, "Increment by a major version")
 	cli.Flags().StringVar(&customVersion, "custom", "", "Set a new custom version")
 	cli.Flags().BoolVar(&login, "login", false, "Login to GitHub")
-	cli.Flags().BoolVar(&noAnsi, "no-ansi", false, "Disable ANSI colors")
+	cli.Flags().BoolVarP(&noAnsi, "no-ansi", "Q", false, "Disable ANSI colors")
 	cli.Flags().BoolVarP(&dryRun, "dry-run", "D", false, "Run without making any changes")
 	cli.Flags().StringVar(&skipHooks, "skip-hooks", "no", "Skip one or many hooks separated by a comma")
 	cli.Flags().BoolVarP(&quiet, "quiet", "q", false, "Reduced output")
