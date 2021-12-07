@@ -128,13 +128,13 @@ func main() {
 
 	cli.Flags().BoolVarP(&initialize, "init", "i", false, "Create a new configuration file")
 	cli.Flags().BoolVarP(&overwriteConfig, "force", "f", false, "Overwrite an existing config file")
-	cli.Flags().BoolVar(&patch, "patch", false, "Increment by a patch version")
-	cli.Flags().BoolVar(&minor, "minor", false, "Increment by a minor version")
-	cli.Flags().BoolVar(&major, "major", false, "Increment by a major version")
+	cli.Flags().BoolVarP(&patch, "patch", "p", false, "Increment by a patch version")
+	cli.Flags().BoolVarP(&minor, "minor", "m", false, "Increment by a minor version")
+	cli.Flags().BoolVarP(&major, "major", "M", false, "Increment by a major version")
 	cli.Flags().StringVar(&customVersion, "custom", "", "Set a new custom version")
 	cli.Flags().BoolVar(&login, "login", false, "Login to GitHub")
 	cli.Flags().BoolVar(&noAnsi, "no-ansi", false, "Disable ANSI colors")
-	cli.Flags().BoolVar(&dryRun, "dry-run", false, "Run without making any changes")
+	cli.Flags().BoolVarP(&dryRun, "dry-run", "D", false, "Run without making any changes")
 	cli.Flags().StringVar(&skipHooks, "skip-hooks", "no", "Skip one or many hooks separated by a comma")
 	cli.Flags().BoolVarP(&quiet, "quiet", "q", false, "Reduced output")
 	cli.Flags().BoolVarP(&selfUpdate, "self-update", "u", false, "Update rt to the latest version")
@@ -230,13 +230,10 @@ func execute() error {
 		}
 	}
 
-	if !dryRun {
-		Repository.Fetch(nil)
-	}
-
 	if !quiet {
 		fmt.Printf("Release %s\n\n", nextVersion)
 		fmt.Print(releaseNotes)
+		fmt.Print("\nRun `git fetch` to get the new remote tag synced with your repository.\n")
 		fmt.Printf("\nReleased in %.2fs\n", (float64(time.Now().UnixNano())-float64(Start.UnixNano()))/1000_000_000.0)
 	} else {
 		fmt.Print(nextVersion)
@@ -323,7 +320,6 @@ func buildReleaseNotes(latestTag *plumbing.Reference) string {
 			continue
 		}
 
-		// get the commit message
 		commit, err := Repository.CommitObject(plumbing.NewHash(c))
 		check(err)
 

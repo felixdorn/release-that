@@ -70,9 +70,9 @@ You can use various placeholders in the following keys:
 You can release a new version with the following command:
 
 ```bash
-rt --patch
-rt --minor
-rt --major
+rt --patch # rt -p
+rt --minor # rt -m
+rt --major # rt -M
 rt --custom 4.24.5-linux+stripped 
 ```
 
@@ -83,22 +83,22 @@ The custom version must be a valid semver version.
   Skips the execution of the `before_release` and `after_release` hooks. You may specify which hooks to
   skip `--skip-hooks before_release,after_release`. You may also pass `no` to run every hook (the default).
 
-* `--quiet`
+* `-q, --quiet`
 
   Suppresses the output of the release process, the only thing printed is the released version.
 
-* `--dry-run`
+* `-D, --dry-run`
 
   Prints the release notes and the release tag, but does not actually create the release.
 
-* `--no-ansi`
+* `-Q, --no-ansi`
 
   Disables ANSI colors in the output.
 
-* `--self-update`
+* `-u, --self-update`
 
   Updates the `rt` binary to the latest version.
 
-* `--version`
+* `-v, --version`
 
   Prints the current version of `rt`.
