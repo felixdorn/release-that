@@ -9,7 +9,7 @@
   ],
   "after_release": [],
   "assets": [
-    "./rt"
+    "./release-that"
   ],
   "tag_message": "Version :tag"
   

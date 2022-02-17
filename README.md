@@ -61,10 +61,14 @@ You can use various placeholders in the following keys:
     * `:author.name`
     * `:author.email`
 * before_release:
-  * `:tag` / `:version`
+    * `:tag` / `:version`
+    * `:commit`
+    * `:longCommit`
 * after_release:
-  * `:tag` / `:version`
-  
+    * `:tag` / `:version`
+    * `:commit`
+    * `:longCommit`
+
 ## Usage
 
 You can release a new version with the following command:

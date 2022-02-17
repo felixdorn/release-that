@@ -1,4 +1,4 @@
-module github.com/me/rt
+module github.com/felixdorn/release-that
 
 go 1.16
 

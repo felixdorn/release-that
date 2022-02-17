@@ -13,34 +13,38 @@ import (
 	"strings"
 	"time"
 
+	"github.com/felixdorn/release-that/globals"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/google/go-github/v40/github"
-	"github.com/me/rt/globals"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 )
 
 //go:embed _config.json
 var defaultConfig []byte
-var Start time.Time
+var start time.Time
 
-var initialize bool
-var login bool
+type options struct {
+	initialize bool
+	login      bool
 
-var overwriteConfig bool
+	overwriteConfig bool
 
-var noAnsi bool
+	noAnsi bool
 
-var patch bool
-var minor bool
-var major bool
-var customVersion string
-var dryRun bool
-var skipHooks string
-var quiet bool
-var selfUpdate bool
-var version bool
+	patch         bool
+	minor         bool
+	major         bool
+	customVersion string
+	dryRun        bool
+	skipHooks     string
+	quiet         bool
+	selfUpdate    bool
+	version       bool
+}
+
+var opts = &options{}
 
 var Repository *git.Repository
 
@@ -49,15 +53,15 @@ func main() {
 		Use:   "rt",
 		Short: "Automated release system for GitHub",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if version {
+			if opts.version {
 				fmt.Println("Rt", globals.Version)
 				return nil
 			}
 
-			if initialize {
+			if opts.initialize {
 				_, err := os.Stat("rt.json")
 
-				if err == nil && !overwriteConfig {
+				if err == nil && !opts.overwriteConfig {
 					return fmt.Errorf("a config file already exists! You can overwrite it with `--force`")
 				}
 
@@ -69,7 +73,7 @@ func main() {
 				return nil
 			}
 
-			if login {
+			if opts.login {
 				fmt.Printf("%sThe token you're about to enter will be stored in %s~/.rtauth%s.%s\n", Gray.Fg(), White.Fg(), Gray.Fg(), Stop)
 				fmt.Printf("%sYour can paste your token safely as it will be hidden immediately.%s\n\n", Gray.Fg(), Stop)
 				token := password("Personal access token")
@@ -85,7 +89,7 @@ func main() {
 				return nil
 			}
 
-			if selfUpdate {
+			if opts.selfUpdate {
 				// get the latest release from GitHub
 				release, _, err := GithubClient.Repositories.GetLatestRelease(context.Background(), "felixdorn", "release-that")
 				check(err)
@@ -118,7 +122,7 @@ func main() {
 				return nil
 			}
 
-			if !patch && !minor && !major && customVersion == "" {
+			if !opts.patch && !opts.minor && !opts.major && opts.customVersion == "" {
 				return fmt.Errorf("one of the following flags is required --patch, --minor, --major, --custom")
 			}
 
@@ -126,19 +130,19 @@ func main() {
 		},
 	}
 
-	cli.Flags().BoolVarP(&initialize, "init", "i", false, "Create a new configuration file")
-	cli.Flags().BoolVarP(&overwriteConfig, "force", "f", false, "Overwrite an existing config file")
-	cli.Flags().BoolVarP(&patch, "patch", "p", false, "Increment by a patch version")
-	cli.Flags().BoolVarP(&minor, "minor", "m", false, "Increment by a minor version")
-	cli.Flags().BoolVarP(&major, "major", "M", false, "Increment by a major version")
-	cli.Flags().StringVar(&customVersion, "custom", "", "Set a new custom version")
-	cli.Flags().BoolVar(&login, "login", false, "Login to GitHub")
-	cli.Flags().BoolVarP(&noAnsi, "no-ansi", "Q", false, "Disable ANSI colors")
-	cli.Flags().BoolVarP(&dryRun, "dry-run", "D", false, "Run without making any changes")
-	cli.Flags().StringVar(&skipHooks, "skip-hooks", "no", "Skip one or many hooks separated by a comma")
-	cli.Flags().BoolVarP(&quiet, "quiet", "q", false, "Reduced output")
-	cli.Flags().BoolVarP(&selfUpdate, "self-update", "u", false, "Update rt to the latest version")
-	cli.Flags().BoolVarP(&version, "version", "v", false, "Print the version")
+	cli.Flags().BoolVarP(&opts.initialize, "init", "i", false, "Create a new configuration file")
+	cli.Flags().BoolVarP(&opts.overwriteConfig, "force", "f", false, "Overwrite an existing config file")
+	cli.Flags().BoolVarP(&opts.patch, "patch", "p", false, "Increment by a patch version")
+	cli.Flags().BoolVarP(&opts.minor, "minor", "m", false, "Increment by a minor version")
+	cli.Flags().BoolVarP(&opts.major, "major", "M", false, "Increment by a major version")
+	cli.Flags().StringVar(&opts.customVersion, "custom", "", "Set a new custom version")
+	cli.Flags().BoolVar(&opts.login, "login", false, "Login to GitHub")
+	cli.Flags().BoolVarP(&opts.noAnsi, "no-ansi", "Q", false, "Disable ANSI colors")
+	cli.Flags().BoolVarP(&opts.dryRun, "dry-run", "D", false, "Run without making any changes")
+	cli.Flags().StringVar(&opts.skipHooks, "skip-hooks", "no", "Skip one or many hooks separated by a comma")
+	cli.Flags().BoolVarP(&opts.quiet, "quiet", "q", false, "Reduced output")
+	cli.Flags().BoolVarP(&opts.selfUpdate, "self-update", "u", false, "Update rt to the latest version")
+	cli.Flags().BoolVarP(&opts.version, "version", "v", false, "Print the version")
 	cli.SilenceErrors = true
 	cli.SilenceUsage = true
 	err := cli.Execute()
@@ -146,7 +150,7 @@ func main() {
 }
 
 func init() {
-	Start = time.Now()
+	start = time.Now()
 
 	_, err := os.Stat(".git")
 
@@ -178,16 +182,19 @@ func execute() error {
 	releaseNotes := buildReleaseNotes(current)
 	owner, project := findOwnerAndProjectName(remote.Config().URLs[0])
 
+	// get current commit
+	commit, err := Repository.Head()
+	check(err)
+
 	if !shouldSkipHook("before_release") {
 		for _, hook := range Config.BeforeRelease {
-			cmd := exec.Command("sh", "-c", Placeholder{value: hook}.Resolve(map[string]string{
-				"version": nextVersion,
-				"tag":     nextVersion,
-			}))
-			cmd.Stdin = os.Stdin
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			err := cmd.Run()
+			err = exec.Command("sh", "-c", hook.Resolve(map[string]string{
+				"version":    nextVersion,
+				"tag":        nextVersion,
+				"commit":     commit.Hash().String()[:7],
+				"fullCommit": commit.Hash().String(),
+			})).Run()
+
 			check(err)
 		}
 	}
@@ -197,7 +204,7 @@ func execute() error {
 		"tag":     nextVersion,
 	})
 
-	if !dryRun {
+	if !opts.dryRun {
 		release, _, err := GithubClient.Repositories.CreateRelease(context.Background(), owner, project, &github.RepositoryRelease{
 			Name:    &name,
 			TagName: &nextVersion,
@@ -218,19 +225,17 @@ func execute() error {
 
 	if !shouldSkipHook("after_release") {
 		for _, hook := range Config.AfterRelease {
-			cmd := exec.Command("sh", "-c", Placeholder{value: hook}.Resolve(map[string]string{
-				"version": nextVersion,
-				"tag":     nextVersion,
-			}))
-			cmd.Stdin = os.Stdin
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			err := cmd.Run()
+			err = exec.Command("sh", "-c", hook.Resolve(map[string]string{
+				"version":    nextVersion,
+				"tag":        nextVersion,
+				"commit":     commit.Hash().String()[:7],
+				"fullCommit": commit.Hash().String(),
+			})).Run()
 			check(err)
 		}
 	}
 
-	if !quiet {
+	if !opts.quiet {
 		fmt.Printf("Release %s\n\n", nextVersion)
 		fmt.Print(releaseNotes)
 		if len(releaseNotes) > 0 {
@@ -238,7 +243,7 @@ func execute() error {
 		}
 
 		fmt.Print("* Run `git fetch` to retrieve the new tag created only on the remote.\n")
-		fmt.Printf("\nReleased in %.2fs\n", (float64(time.Now().UnixNano())-float64(Start.UnixNano()))/1000_000_000.0)
+		fmt.Printf("\nReleased in %.2fs\n", (float64(time.Now().UnixNano())-float64(start.UnixNano()))/1000_000_000.0)
 	} else {
 		fmt.Print(nextVersion)
 	}
@@ -259,15 +264,15 @@ func getNextVersion() (*plumbing.Reference, string) {
 		current = nv
 	}
 
-	if patch {
+	if opts.patch {
 		return tag, current.IncPatch().String()
-	} else if minor {
+	} else if opts.minor {
 		return tag, current.IncMinor().String()
-	} else if major {
+	} else if opts.major {
 		return tag, current.IncMajor().String()
 	}
 
-	next, err := NewVersion(customVersion)
+	next, err := NewVersion(opts.customVersion)
 	check(err)
 	return tag, next.String()
 }
@@ -316,8 +321,7 @@ func buildReleaseNotes(latestTag *plumbing.Reference) string {
 
 	var buffer bytes.Buffer
 
-	cmd := exec.Command("git", "log", "--pretty=%H", latestTag.Name().Short()+"..HEAD")
-	out, err := cmd.CombinedOutput()
+	out, err := exec.Command("git", "log", "--pretty=%H", latestTag.Name().Short()+"..HEAD").CombinedOutput()
 	check(err)
 	for _, c := range strings.Split(string(out), "\n") {
 		if c == "" {
@@ -342,7 +346,7 @@ func buildReleaseNotes(latestTag *plumbing.Reference) string {
 		}
 
 		_, _ = fmt.Fprintf(&buffer, strings.TrimSpace(Config.ReleaseNotes.CommitFormat.Resolve(map[string]string{
-			"hash":         c[0:8],
+			"hash":         c[:7],
 			"longHash":     c,
 			"message":      message,
 			"author.name":  commit.Author.Name,
@@ -354,13 +358,13 @@ func buildReleaseNotes(latestTag *plumbing.Reference) string {
 }
 
 func shouldSkipHook(hook string) bool {
-	if skipHooks == "no" {
+	if opts.skipHooks == "no" {
 		return false
 	}
 
-	if skipHooks == "" {
+	if opts.skipHooks == "" {
 		return true
 	}
 
-	return strings.Contains(skipHooks, hook)
+	return strings.Contains(opts.skipHooks, hook)
 }
