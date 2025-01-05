@@ -1,5 +1,7 @@
 # Rt
 
+> Just testing go.
+
 Rt, short for release that, is a tool for quickly creating GitHub releases.
 
 ## Installation
